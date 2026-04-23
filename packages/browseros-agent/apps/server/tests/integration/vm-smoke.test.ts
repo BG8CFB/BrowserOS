@@ -18,7 +18,10 @@ import {
 const LIVE_VM_SMOKE_TIMEOUT_MS = 10 * 60 * 1000
 const liveIt = process.env.LIVE_VM_SMOKE === '1' ? it : it.skip
 const limactlPath = process.env.LIMACTL_PATH ?? 'limactl'
-const templatePath = resolve('packages/build-tools/template/browseros-vm.yaml')
+const templatePath = resolve(
+  import.meta.dir,
+  '../../../../packages/build-tools/template/browseros-vm.yaml',
+)
 
 const manifest: VmManifest = {
   schemaVersion: 2,
@@ -56,8 +59,8 @@ describe('BrowserOS VM live smoke', () => {
         limaHome,
         templatePath,
         browserosRoot: root,
-        socketTimeoutMs: 5 * 60 * 1000,
-        socketPollMs: 1000,
+        readinessTimeoutMs: 5 * 60 * 1000,
+        readinessPollMs: 1000,
       })
       const cli = new ContainerCli({
         limactlPath,

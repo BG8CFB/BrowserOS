@@ -60,9 +60,11 @@ type MutableOpenClawService = OpenClawService & {
 
 describe('OpenClawService', () => {
   let tempDir: string | null = null
+  const originalFetch = globalThis.fetch
 
   afterEach(async () => {
     mock.restore()
+    globalThis.fetch = originalFetch
     if (tempDir) {
       await rm(tempDir, { recursive: true, force: true })
       tempDir = null
@@ -627,6 +629,7 @@ describe('OpenClawService', () => {
     service.cliClient = {
       probe,
     }
+    mockGatewayAuth()
 
     const firstStart = service.start()
     await startGatewayEntered
@@ -669,6 +672,7 @@ describe('OpenClawService', () => {
     service.cliClient = {
       probe,
     }
+    mockGatewayAuth()
 
     await service.start()
 
@@ -707,6 +711,7 @@ describe('OpenClawService', () => {
     service.cliClient = {
       probe,
     }
+    mockGatewayAuth()
 
     await service.restart()
 
@@ -770,6 +775,7 @@ describe('OpenClawService', () => {
     service.cliClient = {
       probe,
     }
+    mockGatewayAuth()
 
     try {
       await service.restart()
@@ -791,6 +797,79 @@ describe('OpenClawService', () => {
       }),
       expect.any(Function),
     )
+    expect(ensureReady).toHaveBeenCalledTimes(1)
+  })
+
+  it('restart moves off a persisted ready port when auth rejects the current token', async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'openclaw-service-'))
+    await mkdir(join(tempDir, '.openclaw'), { recursive: true })
+    await writeFile(
+      join(tempDir, '.openclaw', 'openclaw.json'),
+      JSON.stringify({
+        gateway: {
+          auth: {
+            token: 'cli-token',
+          },
+        },
+      }),
+    )
+    const occupiedServer = createServer()
+    const occupiedPort = await new Promise<number>((resolve, reject) => {
+      occupiedServer.once('error', reject)
+      occupiedServer.listen(0, '127.0.0.1', () => {
+        const address = occupiedServer.address()
+        if (!address || typeof address === 'string') {
+          reject(new Error('failed to allocate test port'))
+          return
+        }
+        resolve(address.port)
+      })
+    })
+    await writeFile(
+      join(tempDir, '.openclaw', 'runtime-state.json'),
+      `${JSON.stringify({ gatewayPort: occupiedPort }, null, 2)}\n`,
+    )
+    const ensureReady = mock(async () => {})
+    const restartGateway = mock(async () => {})
+    const waitForReady = mock(async () => true)
+    const probe = mock(async () => {})
+    const service = new OpenClawService() as MutableOpenClawService
+
+    service.openclawDir = tempDir
+    service.runtime = {
+      ensureReady,
+      isReady: async (hostPort?: number) => hostPort === occupiedPort,
+      restartGateway,
+      waitForReady,
+    }
+    service.cliClient = {
+      probe,
+    }
+    mockGatewayAuth(401)
+
+    try {
+      await service.restart()
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        occupiedServer.close((error) => {
+          if (error) {
+            reject(error)
+            return
+          }
+          resolve()
+        })
+      })
+    }
+
+    expect(restartGateway).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostPort: expect.any(Number),
+      }),
+      expect.any(Function),
+    )
+    expect(
+      (restartGateway.mock.calls[0]?.[0] as { hostPort: number }).hostPort,
+    ).not.toBe(occupiedPort)
     expect(ensureReady).toHaveBeenCalledTimes(1)
   })
 
@@ -1415,3 +1494,9 @@ describe('OpenClawService', () => {
     )
   })
 })
+
+function mockGatewayAuth(status = 200): ReturnType<typeof mock> {
+  const fetchMock = mock(() => Promise.resolve(new Response('', { status })))
+  globalThis.fetch = fetchMock as typeof globalThis.fetch
+  return fetchMock
+}

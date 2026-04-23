@@ -211,6 +211,7 @@ export class OpenClawService {
         providerKeyCount: Object.keys(provider.envValues).length,
       })
 
+      await this.refreshGatewayAuthToken()
       await this.ensureGatewayPortAllocated(logProgress)
 
       logProgress('Bootstrapping OpenClaw config...')
@@ -234,8 +235,7 @@ export class OpenClawService {
       logProgress('Validating OpenClaw config...')
       await this.assertConfigValid(this.bootstrapCliClient)
 
-      this.tokenLoaded = false
-      await this.loadTokenFromConfig()
+      await this.refreshGatewayAuthToken()
 
       logProgress('Starting OpenClaw gateway...')
       await this.runtime.startGateway(
@@ -294,8 +294,7 @@ export class OpenClawService {
       await this.runtime.ensureReady(logProgress)
 
       logProgress('Refreshing gateway auth token...')
-      this.tokenLoaded = false
-      await this.loadTokenFromConfig()
+      await this.refreshGatewayAuthToken()
       await this.ensureStateEnvFile()
 
       await this.ensureGatewayPortAllocated(logProgress)
@@ -365,8 +364,7 @@ export class OpenClawService {
       await this.runtime.ensureReady(logProgress)
       this.stopGatewayLogTail()
       logProgress('Refreshing gateway auth token...')
-      this.tokenLoaded = false
-      await this.loadTokenFromConfig()
+      await this.refreshGatewayAuthToken()
       await this.ensureStateEnvFile()
       await this.ensureGatewayPortAllocated(logProgress)
       logProgress('Restarting OpenClaw gateway...')
@@ -411,8 +409,7 @@ export class OpenClawService {
       }
 
       logProgress('Reloading gateway auth token...')
-      this.tokenLoaded = false
-      await this.loadTokenFromConfig()
+      await this.refreshGatewayAuthToken()
       this.controlPlaneStatus = 'reconnecting'
       logProgress('Reconnecting control plane...')
       await this.runControlPlaneCall(() => this.cliClient.probe())
@@ -666,8 +663,7 @@ export class OpenClawService {
       try {
         await this.runtime.ensureReady()
 
-        this.tokenLoaded = false
-        await this.loadTokenFromConfig()
+        await this.refreshGatewayAuthToken()
         await this.ensureStateEnvFile()
 
         const persistedPort = await readPersistedGatewayPort(this.openclawDir)
@@ -675,7 +671,7 @@ export class OpenClawService {
           this.setPort(persistedPort)
         }
 
-        if (!(await this.runtime.isReady(this.hostPort))) {
+        if (!(await this.isGatewayAvailable(this.hostPort))) {
           await this.ensureGatewayPortAllocated()
           await this.runtime.startGateway(this.buildGatewayRuntimeSpec())
           const ready = await this.runtime.waitForReady(
@@ -750,9 +746,34 @@ export class OpenClawService {
   }
 
   private async isGatewayAvailable(hostPort: number): Promise<boolean> {
-    if (await this.runtime.isReady(hostPort)) {
-      return true
+    if (!(await this.isGatewayPortReady(hostPort))) return false
+
+    if (!this.tokenLoaded) {
+      logger.debug(
+        'OpenClaw gateway port is ready before auth token is loaded',
+        {
+          hostPort,
+        },
+      )
+      return false
     }
+
+    const client =
+      hostPort === this.hostPort
+        ? this.httpClient
+        : new OpenClawHttpClient(hostPort, async () => this.token)
+    const authenticated = await client.isAuthenticated()
+    if (!authenticated) {
+      logger.warn('OpenClaw gateway port rejected current auth token', {
+        hostPort,
+      })
+    }
+    return authenticated
+  }
+
+  private async isGatewayPortReady(hostPort: number): Promise<boolean> {
+    if (await this.runtime.isReady(hostPort)) return true
+
     const runtime = this.runtime as {
       isHealthy?: (port: number) => Promise<boolean>
     }
@@ -1131,6 +1152,15 @@ export class OpenClawService {
     if (this.tokenLoaded) {
       return
     }
+    if (!existsSync(this.getStateConfigPath())) {
+      return
+    }
+
+    await this.loadTokenFromConfig()
+  }
+
+  private async refreshGatewayAuthToken(): Promise<void> {
+    this.tokenLoaded = false
     if (!existsSync(this.getStateConfigPath())) {
       return
     }
