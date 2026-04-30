@@ -9,6 +9,9 @@ jobs:
   sync:
     name: Bump internal-docs submodule pointer on dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Rewrite SSH submodule URL to HTTPS-with-token
         env:
@@ -18,14 +21,13 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.INTERNAL_DOCS_SYNC_TOKEN }}
           submodules: true
           ref: dev
           fetch-depth: 50
 
-      - name: Bump submodule pointer if internal-docs has new commits
+      - name: Open auto-merge PR if internal-docs has new commits
         env:
-          GH_TOKEN: ${{ secrets.INTERNAL_DOCS_SYNC_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
 
@@ -42,12 +44,18 @@ jobs:
             exit 0
           fi
 
+          BRANCH="bot/sync-internal-docs-$(date -u +%Y%m%d-%H%M%S)"
           git config user.name  "browseros-bot"
           git config user.email "bot@browseros.ai"
+          git checkout -b "$BRANCH"
           git add .internal-docs
           git commit -m "chore: sync internal-docs submodule"
+          git push -u origin "$BRANCH"
 
-          # Rebase onto latest dev to absorb any commits that landed during the run,
-          # then push. set -e takes care of failing the run on rebase conflict.
-          git pull --rebase origin dev
-          git push origin dev
+          PR_URL=$(gh pr create \
+            --base dev \
+            --head "$BRANCH" \
+            --title "chore: sync internal-docs submodule" \
+            --body "Automated bump of the \`.internal-docs\` submodule pointer. Auto-merging.")
+
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
