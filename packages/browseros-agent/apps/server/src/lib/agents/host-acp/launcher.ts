@@ -11,7 +11,7 @@
  * outside darwin / linux / win32).
  */
 
-import { resolveBundledBun } from './bundled-bun'
+import { resolveBundledBun, withBundledBunAcpAdapterEnv } from './bundled-bun'
 import {
   HOST_ACP_ADAPTER_CONFIG,
   type HostAcpAdapter,
@@ -27,6 +27,8 @@ export interface AcpLauncherResolution {
 
 export interface ResolveAcpSpawnCommandInput {
   agentType: string
+  browserosDir?: string | null
+  env?: NodeJS.ProcessEnv
   resourcesDir?: string | null
   platform?: NodeJS.Platform
   /** Injected for tests; production callers leave it unset. */
@@ -55,7 +57,15 @@ export function resolveAcpSpawnCommand(
   })
   if (bunPath) {
     return {
-      command: `${quoteAcpCommandToken(bunPath)} x ${config.acpPackageSpec}`,
+      command: wrapCommandWithEnv(
+        `${quoteAcpCommandToken(bunPath)} x --bun --silent --package ${quoteAcpCommandToken(config.acpPackageSpec)} ${quoteAcpCommandToken(config.acpBin)}`,
+        withBundledBunAcpAdapterEnv({
+          bunPath,
+          browserosDir: input.browserosDir,
+          env: input.env,
+          platform: input.platform,
+        }),
+      ),
       source: 'bundled-bun',
     }
   }
@@ -65,4 +75,15 @@ export function resolveAcpSpawnCommand(
 /** Quotes a token for acpx command splitting while preserving Windows backslashes. */
 function quoteAcpCommandToken(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`
+}
+
+function wrapCommandWithEnv(
+  command: string,
+  env: Record<string, string>,
+): string {
+  const prefix = Object.entries(env)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${key}=${quoteAcpCommandToken(value)}`)
+    .join(' ')
+  return prefix ? `env ${prefix} ${command}` : command
 }

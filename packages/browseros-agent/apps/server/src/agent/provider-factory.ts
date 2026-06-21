@@ -156,6 +156,7 @@ async function createAcpLanguageModel(
   for (const builtIn of ['claude', 'codex'] as const) {
     const launcher = resolveAcpSpawnCommand({
       agentType: builtIn,
+      browserosDir: getBrowserosDir(),
       resourcesDir: config.resourcesDir,
     })
     if (launcher?.source === 'bundled-bun') {

@@ -27,7 +27,10 @@ import {
   type AgentSessionId,
   MAIN_AGENT_SESSION_ID,
 } from '../agent-types'
-import { resolveBundledBun } from '../host-acp/bundled-bun'
+import {
+  resolveBundledBun,
+  withBundledBunAcpAdapterEnv,
+} from '../host-acp/bundled-bun'
 import { withBundledNativeBinaryPath } from '../host-acp/bundled-native-binary'
 import {
   DANGEROUS_ALLOW_MODE_CANDIDATES,
@@ -753,8 +756,12 @@ function createBrowserosAgentRegistry(input: {
         })
         return wrapCommandWithEnv(
           launch.command,
-          launch.addBundledBunAdapterEnv
-            ? withBundledBunAcpAdapterEnv(commandEnv, input.browserosDir)
+          launch.bundledBunPath
+            ? withBundledBunAcpAdapterEnv({
+                bunPath: launch.bundledBunPath,
+                browserosDir: input.browserosDir,
+                env: commandEnv,
+              })
             : commandEnv,
         )
       }
@@ -773,31 +780,20 @@ function createBrowserosAgentRegistry(input: {
 function resolveBrowserosHostAcpAdapterCommand(input: {
   adapter: 'claude' | 'codex'
   resourcesDir: string | null
-}): { command: string; addBundledBunAdapterEnv: boolean } {
+}): { command: string; bundledBunPath: string | null } {
   const bun = resolveBundledBun({ resourcesDir: input.resourcesDir })
   if (bun) {
     const config = HOST_ACP_ADAPTER_CONFIG[input.adapter]
     return {
       command: `${shellQuote(bun)} x --bun --silent --package ${shellQuote(config.acpPackageSpec)} ${shellQuote(config.acpBin)}`,
-      addBundledBunAdapterEnv: true,
+      bundledBunPath: bun,
     }
   }
 
   const config = HOST_ACP_ADAPTER_CONFIG[input.adapter]
   return {
     command: config.acpCommand,
-    addBundledBunAdapterEnv: false,
-  }
-}
-
-/** Adds the minimum env needed for BrowserOS-managed bundled Bun package installs. */
-function withBundledBunAcpAdapterEnv(
-  env: Record<string, string>,
-  browserosDir: string,
-): Record<string, string> {
-  return {
-    ...env,
-    BUN_INSTALL_CACHE_DIR: join(browserosDir, 'cache', 'bun-install'),
+    bundledBunPath: null,
   }
 }
 
