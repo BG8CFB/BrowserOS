@@ -8,6 +8,7 @@ import { websocket } from 'hono/bun'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { HttpAgentError } from '../agent/errors'
 import { INLINED_ENV } from '../env'
+import { TurnRegistry } from '../lib/agents/turns/active-turn-registry'
 import { initializeOAuth, shutdownOAuth } from '../lib/clients/oauth'
 import { RemoteHermesClient } from '../lib/clients/remote-hermes/remote-hermes-client'
 import { getDb } from '../lib/db'
@@ -56,6 +57,12 @@ export async function createHttpServer(config: HttpServerConfig) {
   const klavis = new KlavisService({ browserosId })
   klavis.start()
 
+  // Shared between createAgentRoutes (which owns the lifecycle) and
+  // the nudge MCP route (which needs to push app_connection_request
+  // events into the same active turns). Hoisting here means both
+  // mounts hold the same instance.
+  const turnRegistry = new TurnRegistry()
+
   // Remote Hermes provider. Opt-in via AGENT_RUNNER_JWT_SECRET in env;
   // when absent we still wire the routes but they return a soft
   // not_configured response (agent UI degrades gracefully).
@@ -84,6 +91,7 @@ export async function createHttpServer(config: HttpServerConfig) {
     klavis,
     remoteHermes,
     tokenManager,
+    turnRegistry,
     onShutdown: () => {
       shutdownOAuth()
       void klavis.stop()
