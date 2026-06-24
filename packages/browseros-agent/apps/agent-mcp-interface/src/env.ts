@@ -51,6 +51,20 @@ function readIsDevelopment(): boolean {
 }
 
 /**
+ * Two opt-in escape hatches for legacy surfaces while the v2 cockpit
+ * is the default. Both default to `false` so that the legacy is
+ * invisible out of the box; setting either flag to `1` or `true`
+ * brings the corresponding code path back.
+ */
+function readBoolFlag(name: string): boolean {
+  // biome-ignore lint/style/noProcessEnv: env.ts is the sanctioned env-reader for the package
+  const raw = process.env[name]
+  if (raw === undefined) return false
+  const normalised = raw.trim().toLowerCase()
+  return normalised === '1' || normalised === 'true'
+}
+
+/**
  * Reads happen once at module load. Tests that need different values
  * mutate this object before importing the rest of the source graph;
  * production code treats it as immutable.
@@ -60,4 +74,15 @@ export const env = {
   cdpPort: readCdpPort(),
   browserosDirOverride: readBrowserosDirOverride(),
   isDevelopment: readIsDevelopment(),
+}
+
+/**
+ * Request-time read of the legacy per-slug MCP gate. Evaluated at
+ * call time (not once at module load) so the existing per-slug
+ * integration tests can flip the flag from `beforeAll` without
+ * juggling import order. Default is `false`: the legacy URL shape
+ * returns 404 unless the flag is explicitly set.
+ */
+export function isCockpitLegacyPerAgentMcpEnabled(): boolean {
+  return readBoolFlag('COCKPIT_LEGACY_PER_AGENT_MCP')
 }
