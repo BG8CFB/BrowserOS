@@ -17,12 +17,12 @@ from ..products import PRODUCTS
 from ..release import (
     AVAILABLE_MODULES,
     ListModule,
-    AppcastModule,
     GithubModule,
     PublishModule,
     DownloadModule,
 )
 from ..release.list import DEFAULT_LIST_LIMIT
+from . import release_feeds
 
 app = typer.Typer(
     help="Release automation commands",
@@ -37,6 +37,8 @@ github_app = typer.Typer(
     pretty_exceptions_show_locals=False,
 )
 app.add_typer(github_app, name="github")
+
+release_feeds.register(app)
 
 _PRODUCT_HELP = f"Product to operate on ({', '.join(PRODUCTS)})"
 
@@ -163,19 +165,6 @@ def list_releases(
         release_ctx,
         ListModule(products=products, limit=None if show_all else limit),
     )
-
-
-@app.command("appcast")
-def appcast(
-    version: str = typer.Option(
-        ..., "--version", "-v", help="Version to operate on (e.g., 0.31.0)"
-    ),
-    product: Optional[str] = typer.Option(None, "--product", help=_PRODUCT_HELP),
-):
-    """Generate Sparkle appcast XML snippets."""
-    release_ctx = create_release_context(version, product=product)
-    log_info(f"📝 Generating appcast for v{version}")
-    execute_module(release_ctx, AppcastModule())
 
 
 @app.command("publish")
