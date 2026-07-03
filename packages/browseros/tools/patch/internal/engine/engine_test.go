@@ -584,6 +584,478 @@ func TestApplyReportsPatchProgress(t *testing.T) {
 	assertFile(t, filepath.Join(workspacePath, "chrome", "browser.cc"), "patched\n")
 }
 
+func TestApplyAutoAnnotatesAfterCleanApply(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, "chrome/core.cc", "patched\n")
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/core.cc
+`)
+
+	result, err := Apply(ctx, ApplyOptions{
+		Workspace:    workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:         repoInfo,
+		AutoAnnotate: true,
+	})
+	if err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if result.Annotate == nil || result.Annotate.CommitsCreated != 1 {
+		t.Fatalf("expected one auto-annotate commit, got %+v", result.Annotate)
+	}
+	if len(result.Annotate.Unclaimed) != 0 {
+		t.Fatalf("expected no unclaimed changes, got %v", result.Annotate.Unclaimed)
+	}
+	if subject := gitOutput(t, workspacePath, "log", "-1", "--format=%s"); subject != "chore: browseros core" {
+		t.Fatalf("unexpected HEAD subject %q", subject)
+	}
+	if status := gitOutput(t, workspacePath, "status", "--porcelain", "--", "chrome"); status != "" {
+		t.Fatalf("expected clean checkout, got %q", status)
+	}
+}
+
+func TestApplyWithNoOpsStillAutoAnnotates(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, "chrome/core.cc", "patched\n")
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/core.cc
+`)
+
+	ws := workspace.Entry{Name: "ws", Path: workspacePath}
+	if _, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo}); err != nil {
+		t.Fatalf("Apply without annotate: %v", err)
+	}
+	result, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo, AutoAnnotate: true})
+	if err != nil {
+		t.Fatalf("Apply with annotate: %v", err)
+	}
+	if len(result.Applied) != 0 {
+		t.Fatalf("expected up-to-date tree to need no operations, got %v", result.Applied)
+	}
+	if result.Annotate == nil || result.Annotate.CommitsCreated != 1 {
+		t.Fatalf("expected annotate to commit leftover applied changes, got %+v", result.Annotate)
+	}
+}
+
+func TestAnnotateRefusesDuringConflictResolution(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/
+`)
+	if err := resolve.Save(workspacePath, &resolve.State{
+		Workspace:  workspacePath,
+		RepoRoot:   repoInfo.Root,
+		BaseCommit: baseCommit,
+		Operations: []resolve.Operation{{ChromiumPath: "chrome/core.cc", PatchRel: "chrome/core.cc", Op: patch.OpModify}},
+	}); err != nil {
+		t.Fatalf("resolve.Save: %v", err)
+	}
+
+	_, err := Annotate(ctx, AnnotateOptions{
+		Workspace: workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:      repoInfo,
+	})
+	if err == nil || !strings.Contains(err.Error(), "conflict resolution is in progress") {
+		t.Fatalf("expected pending-conflict refusal, got %v", err)
+	}
+}
+
+func TestAnnotateSkipsUntrackedJunk(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "patched\n")
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc.rej"), "reject junk\n")
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc.orig"), "orig junk\n")
+	writeFile(t, filepath.Join(workspacePath, "chrome", "debug.log"), "log junk\n")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/
+`)
+
+	result, err := Annotate(ctx, AnnotateOptions{
+		Workspace: workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:      repoInfo,
+	})
+	if err != nil {
+		t.Fatalf("Annotate: %v", err)
+	}
+	if result.CommitsCreated != 1 {
+		t.Fatalf("expected one commit, got %+v", result)
+	}
+	if !slices.Equal(result.Committed[0].Files, []string{"chrome/core.cc"}) {
+		t.Fatalf("junk must stay out of feature commits, got %v", result.Committed[0].Files)
+	}
+	if len(result.Unclaimed) != 0 {
+		t.Fatalf("junk must not be reported as unclaimed, got %v", result.Unclaimed)
+	}
+	if files := gitOutput(t, workspacePath, "show", "--name-only", "--format=", "HEAD"); files != "chrome/core.cc" {
+		t.Fatalf("commit files = %q", files)
+	}
+}
+
+func TestAnnotateReportsUnclaimedChanges(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	writeFile(t, filepath.Join(workspacePath, "content", "render.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome", "content")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "patched\n")
+	writeFile(t, filepath.Join(workspacePath, "content", "render.cc"), "patched\n")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/
+`)
+
+	result, err := Annotate(ctx, AnnotateOptions{
+		Workspace: workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:      repoInfo,
+	})
+	if err != nil {
+		t.Fatalf("Annotate: %v", err)
+	}
+	if result.CommitsCreated != 1 {
+		t.Fatalf("expected the claimed file committed, got %+v", result)
+	}
+	if !slices.Equal(result.Unclaimed, []string{"content/render.cc"}) {
+		t.Fatalf("expected unclaimed report, got %v", result.Unclaimed)
+	}
+	if status := gitOutput(t, workspacePath, "status", "--porcelain", "--", "content"); status != "M content/render.cc" {
+		t.Fatalf("unclaimed file should stay uncommitted, got %q", status)
+	}
+}
+
+func TestSkipCompletesAutoAnnotateFromPausedApply(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "aaa.cc"), "a1\na2\na3\na4\na5\na6\na7\na8\na9\na10\n")
+	writeFile(t, filepath.Join(workspacePath, "chrome", "bbb.cc"), "base-bbb\n")
+	runGit(t, workspacePath, "add", "chrome")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	// Two hunks: the first applies at base, the second's context does not
+	// exist -> the --reject fallback half-applies the file and pauses.
+	writeFile(t, filepath.Join(repoInfo.PatchesDir, "chrome", "aaa.cc"),
+		"diff --git a/chrome/aaa.cc b/chrome/aaa.cc\n"+
+			"index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644\n"+
+			"--- a/chrome/aaa.cc\n"+
+			"+++ b/chrome/aaa.cc\n"+
+			"@@ -1,5 +1,5 @@\n a1\n-a2\n+a2 patched\n a3\n a4\n a5\n"+
+			"@@ -7,4 +7,4 @@\n a7\n-mismatched-context\n+a8 patched\n a9\n a10\n")
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, "chrome/bbb.cc", "patched-bbb\n")
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: browseros core"
+    files:
+      - chrome/
+`)
+
+	ws := workspace.Entry{Name: "ws", Path: workspacePath}
+	paused, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo, AutoAnnotate: true})
+	if err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if len(paused.Conflicts) != 1 || paused.Conflicts[0].ChromiumPath != "chrome/aaa.cc" {
+		t.Fatalf("expected pause on chrome/aaa.cc, got %+v", paused.Conflicts)
+	}
+	if paused.Annotate != nil {
+		t.Fatalf("paused apply must not annotate a half-applied tree")
+	}
+	assertFile(t, filepath.Join(workspacePath, "chrome", "aaa.cc"), "a1\na2 patched\na3\na4\na5\na6\na7\na8\na9\na10\n")
+	state, err := resolve.Load(workspacePath)
+	if err != nil {
+		t.Fatalf("resolve.Load: %v", err)
+	}
+	if !state.AutoAnnotate {
+		t.Fatalf("expected auto-annotate intent to survive the pause")
+	}
+
+	result, err := Skip(ctx, SkipOptions{Workspace: ws})
+	if err != nil {
+		t.Fatalf("Skip: %v", err)
+	}
+	if result.Annotate == nil || result.Annotate.CommitsCreated != 1 {
+		t.Fatalf("expected skip to finish the requested annotation, got %+v", result.Annotate)
+	}
+	if !slices.Equal(result.Annotate.Committed[0].Files, []string{"chrome/bbb.cc"}) {
+		t.Fatalf("expected only the applied file committed, got %v", result.Annotate.Committed[0].Files)
+	}
+	if slices.Contains(result.Annotate.Unclaimed, "chrome/aaa.cc") {
+		t.Fatalf("skipped conflict must not be reported unclaimed, got %v", result.Annotate.Unclaimed)
+	}
+	if resolve.Exists(workspacePath) {
+		t.Fatalf("expected resolve state cleared after skip completion")
+	}
+	if files := gitOutput(t, workspacePath, "show", "--name-only", "--format=", "HEAD"); files != "chrome/bbb.cc" {
+		t.Fatalf("half-applied skip and reject junk must stay out of the feature commit, got %q", files)
+	}
+	if status := gitOutput(t, workspacePath, "status", "--porcelain", "--", "chrome/aaa.cc"); status != "M chrome/aaa.cc" {
+		t.Fatalf("skipped conflict should stay dirty for the user, got %q", status)
+	}
+}
+
+func TestSkippedExcludePathsCoversRenameOldPath(t *testing.T) {
+	state := &resolve.State{
+		Skipped: []string{"chrome/new.cc", "content/plain.cc"},
+		Operations: []resolve.Operation{
+			{ChromiumPath: "chrome/new.cc", OldPath: "chrome/old.cc", Op: patch.OpRename},
+			{ChromiumPath: "content/plain.cc", Op: patch.OpModify},
+			{ChromiumPath: "chrome/applied.cc", Op: patch.OpModify},
+		},
+	}
+	got := skippedExcludePaths(state)
+	slices.Sort(got)
+	want := []string{"chrome/new.cc", "chrome/old.cc", "content/plain.cc"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("skippedExcludePaths = %v, want %v (rename old path and skipped paths, not applied ops)", got, want)
+	}
+}
+
+func TestApplyRefusesDuringConflictResolution(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	if err := resolve.Save(workspacePath, &resolve.State{
+		Workspace:  workspacePath,
+		RepoRoot:   repoInfo.Root,
+		BaseCommit: baseCommit,
+		Operations: []resolve.Operation{{ChromiumPath: "chrome/core.cc", PatchRel: "chrome/core.cc", Op: patch.OpModify}},
+	}); err != nil {
+		t.Fatalf("resolve.Save: %v", err)
+	}
+
+	ws := workspace.Entry{Name: "ws", Path: workspacePath}
+	if _, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo}); err == nil || !strings.Contains(err.Error(), "conflict resolution is in progress") {
+		t.Fatalf("expected apply to refuse during pending resolution, got %v", err)
+	}
+	if _, err := Sync(ctx, SyncOptions{Workspace: ws, Repo: repoInfo}); err == nil || !strings.Contains(err.Error(), "conflict resolution is in progress") {
+		t.Fatalf("expected sync to refuse during pending resolution, got %v", err)
+	}
+	if !resolve.Exists(workspacePath) {
+		t.Fatalf("pending resolve state must survive the refused runs")
+	}
+}
+
+func TestApplyRefusesWithUnmergedFiles(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	rel := "chrome/core.cc"
+	writeFile(t, filepath.Join(workspacePath, rel), "base\n")
+	runGit(t, workspacePath, "add", rel)
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	// Two branches touching the same line, merged to force an unmerged (UU)
+	// entry — the state a conflicted stash pop leaves, with no resolve.json.
+	runGit(t, workspacePath, "checkout", "-b", "other")
+	writeFile(t, filepath.Join(workspacePath, rel), "other\n")
+	runGit(t, workspacePath, "commit", "-am", "other change")
+	runGit(t, workspacePath, "checkout", "-")
+	writeFile(t, filepath.Join(workspacePath, rel), "mine\n")
+	runGit(t, workspacePath, "commit", "-am", "my change")
+	if err := exec.Command("git", "-C", workspacePath, "merge", "other").Run(); err == nil {
+		t.Fatalf("expected merge to conflict")
+	}
+	if status := gitOutput(t, workspacePath, "status", "--porcelain", "--", rel); !strings.HasPrefix(status, "UU") {
+		t.Fatalf("test setup expected unmerged status, got %q", status)
+	}
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	ws := workspace.Entry{Name: "ws", Path: workspacePath}
+	if _, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo}); err == nil || !strings.Contains(err.Error(), "unresolved merge conflicts") {
+		t.Fatalf("expected apply to refuse on unmerged files, got %v", err)
+	}
+}
+
+func TestAnnotateRefusesOnConflictMarkers(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	rel := "chrome/core.cc"
+	writeFile(t, filepath.Join(workspacePath, rel), "base\n")
+	runGit(t, workspacePath, "add", rel)
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	// The plain-modified-with-markers state a stash rebase leaves (no UU entry).
+	writeFile(t, filepath.Join(workspacePath, rel), "<<<<<<< local\nmine\n=======\ntheirs\n>>>>>>> stashed\n")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: core"
+    files:
+      - chrome/
+`)
+	ws := workspace.Entry{Name: "ws", Path: workspacePath}
+	if _, err := Annotate(ctx, AnnotateOptions{Workspace: ws, Repo: repoInfo}); err == nil || !strings.Contains(err.Error(), "leftover conflict markers") {
+		t.Fatalf("expected annotate to refuse on conflict markers, got %v", err)
+	}
+	if _, err := Apply(ctx, ApplyOptions{Workspace: ws, Repo: repoInfo}); err == nil || !strings.Contains(err.Error(), "leftover conflict markers") {
+		t.Fatalf("expected apply to refuse on conflict markers, got %v", err)
+	}
+}
+
+func TestApplyAnnotatesWithParkedCleanStash(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	rel := "chrome/core.cc"
+	writeFile(t, filepath.Join(workspacePath, rel), "base\n")
+	writeFile(t, filepath.Join(workspacePath, "local.txt"), "local\n")
+	runGit(t, workspacePath, "add", ".")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, rel, "patched\n")
+	writeFeaturesYAML(t, repoInfo.Root, `version: "1.0"
+features:
+  browseros-core:
+    description: "chore: core"
+    files:
+      - chrome/
+`)
+
+	// Simulate a --no-rebase sync that parked local changes: the change is in
+	// a stash, removed from the worktree, and recorded on workspace state.
+	writeFile(t, filepath.Join(workspacePath, "local.txt"), "local changed\n")
+	stashRef, err := git.StashPush(ctx, workspacePath, "parked", true, []string{"local.txt"})
+	if err != nil {
+		t.Fatalf("StashPush: %v", err)
+	}
+	if err := workspace.SaveState(workspacePath, &workspace.State{Version: 1, Workspace: workspacePath, BaseCommit: baseCommit, PendingStash: stashRef}); err != nil {
+		t.Fatalf("SaveState: %v", err)
+	}
+
+	result, err := Apply(ctx, ApplyOptions{
+		Workspace:    workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:         repoInfo,
+		AutoAnnotate: true,
+	})
+	if err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if result.AnnotateSkipped != "" {
+		t.Fatalf("a parked-clean stash must not block annotation, got skip=%q", result.AnnotateSkipped)
+	}
+	if result.Annotate == nil || result.Annotate.CommitsCreated != 1 {
+		t.Fatalf("expected feature commit for the pure-patch tree, got %+v", result.Annotate)
+	}
+}
+
+func TestApplyAutoAnnotateSkipsWithoutFeaturesRegistry(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, "chrome/core.cc", "patched\n")
+
+	result, err := Apply(ctx, ApplyOptions{
+		Workspace:    workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:         repoInfo,
+		AutoAnnotate: true,
+	})
+	if err != nil {
+		t.Fatalf("Apply must succeed without a features registry: %v", err)
+	}
+	if len(result.Applied) != 1 {
+		t.Fatalf("expected the patch applied, got %v", result.Applied)
+	}
+	if result.Annotate != nil || result.AnnotateError != "" {
+		t.Fatalf("expected annotation skipped quietly, got %+v / %q", result.Annotate, result.AnnotateError)
+	}
+}
+
+func TestApplyRecordsAnnotateErrorWithoutFailing(t *testing.T) {
+	ctx := context.Background()
+	workspacePath := initGitRepo(t)
+	writeFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "base\n")
+	runGit(t, workspacePath, "add", "chrome/core.cc")
+	runGit(t, workspacePath, "commit", "-m", "workspace base")
+	baseCommit := gitOutput(t, workspacePath, "rev-parse", "HEAD")
+
+	repoInfo := newPatchRepo(t, baseCommit)
+	writePatchFromEdit(t, ctx, workspacePath, repoInfo, baseCommit, "chrome/core.cc", "patched\n")
+	writeFeaturesYAML(t, repoInfo.Root, "features: broken\n")
+
+	result, err := Apply(ctx, ApplyOptions{
+		Workspace:    workspace.Entry{Name: "ws", Path: workspacePath},
+		Repo:         repoInfo,
+		AutoAnnotate: true,
+	})
+	if err != nil {
+		t.Fatalf("Apply must not fail on an annotate error: %v", err)
+	}
+	if len(result.Applied) != 1 {
+		t.Fatalf("apply outcome must survive the annotate failure, got %v", result.Applied)
+	}
+	if result.AnnotateError == "" || result.Annotate != nil {
+		t.Fatalf("expected recorded annotate error, got %+v / %q", result.Annotate, result.AnnotateError)
+	}
+	assertFile(t, filepath.Join(workspacePath, "chrome", "core.cc"), "patched\n")
+}
+
 func TestInspectWorkspaceSkipsIgnoredUntrackedFiles(t *testing.T) {
 	ctx := context.Background()
 	workspacePath := initGitRepo(t)
