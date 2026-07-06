@@ -25,7 +25,7 @@ import { auditTasksRoute } from './routes/audit/tasks'
 import { auditReplayRoute } from './routes/audit-replay'
 import { replayTabsRoute } from './routes/audit-replay/tabs'
 import { connectionsRoute } from './routes/connections'
-import { mcpV2Route } from './routes/mcp-v2'
+import { mcpRoute } from './routes/mcp'
 import { createSystemRoute } from './routes/system'
 import { tabsRoute } from './routes/tabs'
 
@@ -105,7 +105,7 @@ export function createServer(options: CreateServerOptions = {}) {
   // The single MCP endpoint mounts at `/mcp`.
   return app
     .route('/', createSystemRoute({ onShutdown: options.onShutdown }))
-    .route('/', mcpV2Route)
+    .route('/', mcpRoute)
     .route('/', tabsRoute)
     .route('/', agentsControlRoute)
     .route('/', connectionsRoute)
