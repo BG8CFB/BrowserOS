@@ -4,32 +4,27 @@ import { DisplayHeading, Em, StepCopy } from '../components/DisplayHeading'
 import { StarterPromptTile } from '../components/StarterPromptTile'
 import { StepWrap } from '../components/StepWrap'
 import { STARTER_PROMPTS } from '../onboarding-v2.helpers'
-import type { ImportPhase } from '../onboarding-v2.types'
 
 interface ReadyStepProps {
-  phase: ImportPhase
   onDone: () => void
 }
 
-/** Renders the final MCP setup step and post-connection starter prompts. */
-export function ReadyStep({ phase, onDone }: ReadyStepProps) {
-  const didImportLogins = phase === 'imported'
-
+/**
+ * Final onboarding step. Confirms the import landed and points at
+ * the MCP page for harness link-up. Reached only after a successful
+ * import; the reconnect path from Welcome bypasses this step and
+ * completes onboarding directly.
+ */
+export function ReadyStep({ onDone }: ReadyStepProps) {
   return (
     <StepWrap>
-      {didImportLogins ? (
-        <DisplayHeading>
-          Logins <Em>imported</Em>.
-        </DisplayHeading>
-      ) : (
-        <DisplayHeading>
-          Almost <Em>there</Em>.
-        </DisplayHeading>
-      )}
+      <DisplayHeading>
+        Logins <Em>imported.</Em>
+      </DisplayHeading>
       <StepCopy>
-        {didImportLogins
-          ? 'One step left: connect your agent. Open MCP in BrowserClaw and link Claude Code, Cursor, Codex, or another harness. Then your agent runs tasks here, logged in as you. You watch, approve, and audit.'
-          : 'Connect your agent next. Open MCP in BrowserClaw and link Claude Code, Cursor, Codex, or another harness. Then your agent runs tasks in this browser. You watch, approve, and audit.'}
+        One step left. Open the MCP page in BrowserClaw and link your AI: Claude
+        Code, Cursor, Codex, or any other. Your agent runs tasks in this
+        browser. You watch, approve, and audit.
       </StepCopy>
       <div className="mb-2.5 font-bold text-[12.5px] text-ink-2">
         Once connected, try one of these.
@@ -41,7 +36,7 @@ export function ReadyStep({ phase, onDone }: ReadyStepProps) {
       </div>
       <Button type="button" size="lg" onClick={onDone}>
         <PlugZap className="size-4" />
-        Connect your agent
+        Connect your AI
       </Button>
     </StepWrap>
   )

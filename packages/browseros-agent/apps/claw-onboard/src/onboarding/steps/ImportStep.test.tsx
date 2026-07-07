@@ -80,7 +80,7 @@ function checklistRowFor(html: string, label: string): string {
 describe('ImportStep', () => {
   it('renders the picker, the Keychain notice, and an Import button in picker phase', () => {
     const html = render('picker')
-    expect(html).toContain('Choose a browser profile to import')
+    expect(html).toContain('Pick a profile to import')
     expect(html).toContain('Google Chrome - Work')
     expect(html).toContain('Google Chrome - Personal')
     expect(html).toContain('Microsoft Edge - Default')
@@ -91,7 +91,14 @@ describe('ImportStep', () => {
       )
     }
     expect(html).toContain('7 of 7 selected')
-    expect(html).toContain('macOS will ask permission')
+    // JSX wraps "macOS will ask" in a semibold span, so the string
+    // "macOS will ask to read" is split by a </span> boundary in the
+    // rendered HTML. Assert on the positive plus a negative that
+    // explicitly rules out the old "macOS will ask permission"
+    // phrasing; together these pin the assertion to the new copy
+    // without fighting the JSX structure.
+    expect(html).toContain('macOS will ask')
+    expect(html).not.toContain('macOS will ask permission')
     expect(html).toContain('Import 7 items from Work')
     expect(html).not.toContain('Chrome is open')
     expect(html).not.toContain('Quit Chrome for me')
@@ -121,13 +128,13 @@ describe('ImportStep', () => {
     const html = render('picker', readyState(), { selectedItems: [] })
 
     expect(html).toContain('0 of 7 selected')
-    expect(html).toContain('Select items to import')
+    expect(html).toContain('Select what to import')
     expect(html).toContain('disabled=""')
   })
 
   it('disables import while Chromium is detecting sources', () => {
     const html = render('picker', readyState({ status: 'detecting' }))
-    expect(html).toContain('Detecting import sources')
+    expect(html).toContain('Looking for profiles')
     expect(html).toContain('disabled=""')
   })
 
@@ -144,7 +151,7 @@ describe('ImportStep', () => {
         ],
       }),
     )
-    expect(html).toContain('No supported import items')
+    expect(html).toContain('Nothing to import from this profile')
     expect(html).not.toContain('What to import')
     expect(html).toContain('disabled=""')
   })
@@ -204,10 +211,10 @@ describe('ImportStep', () => {
       }),
     )
 
-    expect(html).toContain('Import failed')
+    expect(html).toContain('Something went wrong.')
     expect(html).toContain('Chrome needs to be closed before importing.')
-    expect(html).toContain('Try import again')
-    expect(html).not.toContain('Choose a browser profile to import')
+    expect(html).toContain('Try again')
+    expect(html).not.toContain('Pick a profile to import')
   })
 
   it('renders the success card and continue CTA in imported phase', () => {
