@@ -37,7 +37,7 @@ export const ProviderTemplateCard: FC<ProviderTemplateCardProps> = ({
             <span className="font-medium text-foreground">{template.name}</span>
             {highlighted && (
               <span className="rounded-full border border-orange-300/60 bg-orange-100/70 px-2 py-0.5 font-semibold text-[10px] text-orange-700 dark:border-orange-400/40 dark:bg-orange-500/15 dark:text-orange-300">
-                Recommended
+                推荐
               </span>
             )}
           </div>
@@ -51,7 +51,7 @@ export const ProviderTemplateCard: FC<ProviderTemplateCardProps> = ({
             'border-[var(--accent-orange)] bg-[var(--accent-orange)]/5 text-[var(--accent-orange)]',
         )}
       >
-        USE
+        使用
       </Badge>
     </button>
   )

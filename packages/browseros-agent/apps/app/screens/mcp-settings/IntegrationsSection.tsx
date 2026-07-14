@@ -39,7 +39,7 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
     try {
       const result = await install.mutateAsync(agentId)
       if (!result.success) {
-        setError(agentId, result.message ?? 'Install failed.')
+        setError(agentId, result.message ?? '安装失败。')
       }
     } catch (err) {
       setError(agentId, err instanceof Error ? err.message : String(err))
@@ -51,7 +51,7 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
     try {
       const result = await uninstall.mutateAsync(agentId)
       if (!result.success) {
-        setError(agentId, result.message ?? 'Uninstall failed.')
+        setError(agentId, result.message ?? '卸载失败。')
       }
     } catch (err) {
       setError(agentId, err instanceof Error ? err.message : String(err))
@@ -68,12 +68,9 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
           surfaces the most useful at-a-glance metric. */}
       <div className="flex items-end justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="font-semibold text-lg leading-tight">
-            Connected agents
-          </h2>
+          <h2 className="font-semibold text-lg leading-tight">已连接的代理</h2>
           <p className="text-muted-foreground text-sm">
-            Add BrowserOS as an MCP server in your AI agents — no copy-paste
-            required.
+            将 BrowserOS 作为 MCP 服务器添加到你的 AI 代理中——无需复制粘贴。
           </p>
         </div>
         {detectedCount > 0 && (
@@ -81,11 +78,11 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
             <span className="font-semibold text-foreground">
               {connectedCount}
             </span>{' '}
-            of{' '}
+            /{' '}
             <span className="font-semibold text-foreground">
               {detectedCount}
             </span>{' '}
-            connected
+            已连接
           </div>
         )}
       </div>
@@ -105,7 +102,7 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
 
       {agentsQuery.data && agents.length === 0 && (
         <div className="rounded-lg border border-border border-dashed bg-card px-4 py-6 text-center text-muted-foreground text-sm">
-          No supported agents found on this system.
+          未在此系统上找到受支持的代理。
         </div>
       )}
 
@@ -140,7 +137,7 @@ export const IntegrationsSection: FC<IntegrationsSectionProps> = ({
             className="-ml-2 text-muted-foreground hover:text-foreground"
           >
             <ChevronDown className="mr-1 h-3.5 w-3.5 transition-transform data-[state=open]:rotate-180" />
-            Show manual setup
+            显示手动配置
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
@@ -194,11 +191,11 @@ const AgentRow: FC<AgentRowProps> = ({
                 className="h-1.5 w-1.5 rounded-full bg-emerald-500"
                 aria-hidden
               />
-              Connected
+              已连接
             </span>
           )}
           {!agent.installed && (
-            <span className="text-muted-foreground text-xs">Not installed</span>
+            <span className="text-muted-foreground text-xs">未安装</span>
           )}
         </div>
         {error && (
@@ -222,7 +219,7 @@ const AgentRow: FC<AgentRowProps> = ({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Get {presentation.label}
+              获取 {presentation.label}
               <ExternalLink className="ml-1 h-3 w-3" />
             </a>
           </Button>
@@ -232,14 +229,10 @@ const AgentRow: FC<AgentRowProps> = ({
             size="sm"
             disabled={busy || !canConnect}
             onClick={() => onInstall(agent.id)}
-            title={
-              !canConnect
-                ? 'Waiting for the MCP server URL to load…'
-                : undefined
-            }
+            title={!canConnect ? '正在加载 MCP 服务器 URL…' : undefined}
           >
             {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            Connect
+            连接
           </Button>
         )}
         {agent.installed && agent.linked && (
@@ -251,7 +244,7 @@ const AgentRow: FC<AgentRowProps> = ({
             className="text-muted-foreground hover:text-destructive"
           >
             {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            Disconnect
+            断开连接
           </Button>
         )}
       </div>
@@ -284,10 +277,10 @@ const ErrorPanel: FC<{ message: string; onRetry: () => void }> = ({
   <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
     <div className="space-y-1.5 text-sm">
-      <div className="font-medium text-destructive">Could not load agents</div>
+      <div className="font-medium text-destructive">无法加载代理</div>
       <div className="text-muted-foreground">{message}</div>
       <Button size="sm" variant="outline" className="mt-1" onClick={onRetry}>
-        Retry
+        重试
       </Button>
     </div>
   </div>

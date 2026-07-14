@@ -59,10 +59,9 @@ export const ProviderTemplatesSection: FC<ProviderTemplatesSectionProps> = ({
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md">
         <CollapsibleTrigger className="mb-4 flex w-full items-center justify-between text-left">
           <div>
-            <h3 className="font-semibold text-lg">Quick provider templates</h3>
+            <h3 className="font-semibold text-lg">快捷服务商模板</h3>
             <p className="text-muted-foreground text-sm">
-              {codingAdapters.length + filteredTemplates.length} templates
-              available
+              {codingAdapters.length + filteredTemplates.length} 个可用模板
             </p>
           </div>
           <ChevronDown

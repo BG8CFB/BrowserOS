@@ -15,7 +15,7 @@ export const UsagePage: FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm">
-        Loading usage data...
+        正在加载用量数据...
       </div>
     )
   }
@@ -26,17 +26,15 @@ export const UsagePage: FC = () => {
         <div className="flex items-center gap-4 rounded-xl border p-5">
           <BrowserOSIcon size={40} />
           <div>
-            <h2 className="font-semibold text-lg">Usage & Billing</h2>
+            <h2 className="font-semibold text-lg">用量与账单</h2>
             <p className="text-muted-foreground text-sm">
-              Monitor your BrowserOS AI credit usage
+              查看你的 BrowserOS AI 额度使用情况
             </p>
           </div>
         </div>
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-8">
           <AlertCircle className="h-6 w-6 text-muted-foreground" />
-          <p className="text-muted-foreground text-sm">
-            Unable to load credit information
-          </p>
+          <p className="text-muted-foreground text-sm">无法加载额度信息</p>
         </div>
       </div>
     )
@@ -51,9 +49,9 @@ export const UsagePage: FC = () => {
       <div className="flex items-center gap-4 rounded-xl border p-5">
         <BrowserOSIcon size={40} />
         <div>
-          <h2 className="font-semibold text-lg">Usage & Billing</h2>
+          <h2 className="font-semibold text-lg">用量与账单</h2>
           <p className="text-muted-foreground text-sm">
-            Monitor your BrowserOS AI credit usage
+            查看你的 BrowserOS AI 额度使用情况
           </p>
         </div>
       </div>
@@ -62,7 +60,7 @@ export const UsagePage: FC = () => {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-muted-foreground" />
-            <span className="font-semibold text-sm">Daily Credits</span>
+            <span className="font-semibold text-sm">每日额度</span>
           </div>
           <span
             className={cn('font-bold text-2xl', getCreditTextColor(credits))}
@@ -88,16 +86,16 @@ export const UsagePage: FC = () => {
           <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5">
             <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
             <div>
-              <p className="font-medium text-xs">Resets daily</p>
-              <p className="text-muted-foreground text-xs">Midnight UTC</p>
+              <p className="font-medium text-xs">每日重置</p>
+              <p className="text-muted-foreground text-xs">UTC 午夜</p>
             </div>
           </div>
           <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5">
             <Zap className="h-4 w-4 shrink-0 text-muted-foreground" />
             <div>
-              <p className="font-medium text-xs">Credits used today</p>
+              <p className="font-medium text-xs">今日已用额度</p>
               <p className="text-muted-foreground text-xs">
-                {total - credits} of {total}
+                {total - credits} / {total}
               </p>
             </div>
           </div>
@@ -109,14 +107,12 @@ export const UsagePage: FC = () => {
           <CreditCard className="h-5 w-5 text-muted-foreground" />
           <div>
             <p className="flex items-center gap-2 font-semibold text-sm">
-              Need more credits?
-              <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
-                Coming soon
+              需要更多额度？
+              <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground tracking-wide">
+                即将推出
               </span>
             </p>
-            <p className="text-muted-foreground text-xs">
-              Additional credit packages will be available soon
-            </p>
+            <p className="text-muted-foreground text-xs">额度包将于近期上架</p>
           </div>
         </div>
       </div>
@@ -126,9 +122,9 @@ export const UsagePage: FC = () => {
           <div className="flex items-center gap-3">
             <Zap className="h-5 w-5 text-[var(--accent-orange)]" />
             <div>
-              <p className="font-semibold text-sm">Want unlimited usage?</p>
+              <p className="font-semibold text-sm">想要无限使用？</p>
               <p className="text-muted-foreground text-xs">
-                Add your own LLM provider — no credit limits
+                添加你自己的 LLM 服务商 — 不受额度限制
               </p>
             </div>
           </div>
@@ -138,7 +134,7 @@ export const UsagePage: FC = () => {
             className="border-[var(--accent-orange)] bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] hover:bg-[var(--accent-orange)]/20"
             asChild
           >
-            <a href="/app.html#/settings/ai">Add Provider</a>
+            <a href="/app.html#/settings/ai">添加服务商</a>
           </Button>
         </div>
       </div>

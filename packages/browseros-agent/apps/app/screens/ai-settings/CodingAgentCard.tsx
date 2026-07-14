@@ -83,7 +83,7 @@ export const CodingAgentCard: FC<CodingAgentCardProps> = ({
               variant="secondary"
               className="rounded bg-[var(--accent-orange)]/10 text-[var(--accent-orange)]"
             >
-              DEFAULT
+              默认
             </Badge>
           )}
         </div>
@@ -93,7 +93,7 @@ export const CodingAgentCard: FC<CodingAgentCardProps> = ({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`Delete ${name}`}
+          aria-label={`删除 ${name}`}
           disabled={!allowDelete || deleting}
           onClick={() => onDelete(agent)}
           className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"

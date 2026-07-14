@@ -350,10 +350,10 @@ export const BrowserOsAiPane: FC = () => {
 
   const handleTestProvider = async (provider: LlmProviderConfig) => {
     if (!agentServerUrl) {
-      toast.error('Test Failed', {
+      toast.error('测试失败', {
         description: (
           <span className="text-red-600 text-sm dark:text-red-400">
-            Server URL not available
+            服务器地址不可用
           </span>
         ),
         duration: 3000,
@@ -367,7 +367,7 @@ export const BrowserOsAiPane: FC = () => {
       const result = await testProvider(provider, agentServerUrl)
 
       if (result.success) {
-        toast.success('Test Successful', {
+        toast.success('测试成功', {
           description: (
             <span className="text-green-600 text-sm dark:text-green-400">
               {result.message}
@@ -376,7 +376,7 @@ export const BrowserOsAiPane: FC = () => {
           duration: 3000,
         })
       } else {
-        toast.error('Test Failed', {
+        toast.error('测试失败', {
           description: (
             <span className="text-red-600 text-sm dark:text-red-400">
               {result.message}
@@ -386,10 +386,10 @@ export const BrowserOsAiPane: FC = () => {
         })
       }
     } catch (error) {
-      toast.error('Test Failed', {
+      toast.error('测试失败', {
         description: (
           <span className="text-red-600 text-sm dark:text-red-400">
-            {error instanceof Error ? error.message : 'Unknown error'}
+            {error instanceof Error ? error.message : '未知错误'}
           </span>
         ),
         duration: 3000,
@@ -459,16 +459,15 @@ export const BrowserOsAiPane: FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Provider</AlertDialogTitle>
+            <AlertDialogTitle>删除服务商</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{providerToDelete?.name}"? This
-              action cannot be undone.
+              确定要删除"{providerToDelete?.name}"吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteProvider}>
-              Delete
+              删除
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -480,17 +479,16 @@ export const BrowserOsAiPane: FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Synced Provider</AlertDialogTitle>
+            <AlertDialogTitle>删除已同步的服务商</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "
-              {incompleteProviderToDelete?.name}
-              "? This will remove it from all your devices.
+              确定要删除"{incompleteProviderToDelete?.name}
+              "吗？这会从你的所有设备上移除。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteIncompleteProvider}>
-              Delete
+              删除
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

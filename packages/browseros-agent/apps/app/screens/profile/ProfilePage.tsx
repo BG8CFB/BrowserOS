@@ -43,8 +43,8 @@ import {
 } from './graphql/profileDocument'
 
 const formSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().min(1, '请输入名字'),
+  lastName: z.string().min(1, '请输入姓氏'),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -93,9 +93,7 @@ export const ProfilePage: FC = () => {
       },
       onError: (err) => {
         setState('error')
-        setError(
-          err instanceof Error ? err.message : 'Failed to update profile',
-        )
+        setError(err instanceof Error ? err.message : '更新个人资料失败')
       },
     },
   )
@@ -128,12 +126,12 @@ export const ProfilePage: FC = () => {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file')
+      setError('请选择图片文件')
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be less than 5MB')
+      setError('图片大小不能超过 5MB')
       return
     }
 
@@ -154,7 +152,7 @@ export const ProfilePage: FC = () => {
         },
       )
 
-      if (!res.ok) throw new Error('Failed to get upload URL')
+      if (!res.ok) throw new Error('获取上传地址失败')
 
       const { presignedUrl, publicUrl, headers } = await res.json()
 
@@ -164,11 +162,11 @@ export const ProfilePage: FC = () => {
         body: file,
       })
 
-      if (!uploadRes.ok) throw new Error('Failed to upload image')
+      if (!uploadRes.ok) throw new Error('上传图片失败')
 
       setAvatarUrl(publicUrl)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload image')
+      setError(err instanceof Error ? err.message : '上传图片失败')
       setAvatarPreview(null)
     } finally {
       setIsUploading(false)
@@ -232,8 +230,8 @@ export const ProfilePage: FC = () => {
             <ArrowLeft className="size-4" />
           </Button>
           <div className="flex-1 pr-9 text-center">
-            <CardTitle className="text-2xl">Update Profile</CardTitle>
-            <CardDescription>Update your profile information</CardDescription>
+            <CardTitle className="text-2xl">更新个人资料</CardTitle>
+            <CardDescription>更新您的个人资料信息</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -242,7 +240,7 @@ export const ProfilePage: FC = () => {
           <Alert className="border-green-500 bg-green-50 dark:bg-green-950/30">
             <CheckCircle2 className="size-4 text-green-600 dark:text-green-400" />
             <AlertDescription className="text-green-600 dark:text-green-400">
-              Profile updated successfully!
+              个人资料更新成功！
             </AlertDescription>
           </Alert>
         )}
@@ -267,7 +265,7 @@ export const ProfilePage: FC = () => {
                   <img
                     // biome-ignore lint/style/noNonNullAssertion: guarded by ternary
                     src={avatarPreview || avatarUrl!}
-                    alt="Profile"
+                    alt="个人资料"
                     className="size-24 rounded-full object-cover transition-opacity group-hover:opacity-80"
                   />
                 ) : getInitials() ? (
@@ -287,9 +285,7 @@ export const ProfilePage: FC = () => {
                   )}
                 </div>
               </button>
-              <p className="text-muted-foreground text-xs">
-                Click to upload profile picture
-              </p>
+              <p className="text-muted-foreground text-xs">点击上传头像</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -305,7 +301,7 @@ export const ProfilePage: FC = () => {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>名字</FormLabel>
                     <FormControl>
                       <Input
                         placeholder=""
@@ -322,7 +318,7 @@ export const ProfilePage: FC = () => {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>姓氏</FormLabel>
                     <FormControl>
                       <Input
                         placeholder=""
@@ -346,7 +342,7 @@ export const ProfilePage: FC = () => {
               ) : (
                 <UserPen className="size-4" />
               )}
-              Save Changes
+              保存更改
             </Button>
           </form>
         </Form>

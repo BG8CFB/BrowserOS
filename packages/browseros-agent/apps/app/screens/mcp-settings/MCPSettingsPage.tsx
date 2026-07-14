@@ -35,7 +35,7 @@ export const MCPSettingsPage: FC = () => {
         setTools(result.tools)
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load'
+      const errorMsg = err instanceof Error ? err.message : '加载失败'
       if (!url) {
         setUrlError(errorMsg)
       } else {
@@ -66,9 +66,7 @@ export const MCPSettingsPage: FC = () => {
         setTools(result.tools)
       }
     } catch (err) {
-      setToolsError(
-        err instanceof Error ? err.message : 'Failed to fetch tools',
-      )
+      setToolsError(err instanceof Error ? err.message : '获取工具失败')
     } finally {
       setToolsLoading(false)
     }

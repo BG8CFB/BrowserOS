@@ -74,14 +74,14 @@ export const ProviderCard: FC<ProviderCardProps> = ({
               variant="secondary"
               className="rounded bg-[var(--accent-orange)]/10 text-[var(--accent-orange)]"
             >
-              DEFAULT
+              默认
             </Badge>
           )}
         </div>
         <p className="truncate text-muted-foreground text-sm">
           {isBuiltIn ? (
             <>
-              BrowserOS-hosted model with strict rate limits.{' '}
+              BrowserOS 托管模型，有严格的速率限制。{' '}
               <a
                 href="https://docs.browseros.com/features/bring-your-own-llm"
                 target="_blank"
@@ -89,9 +89,9 @@ export const ProviderCard: FC<ProviderCardProps> = ({
                 className="underline hover:text-foreground"
                 onClick={(e) => e.stopPropagation()}
               >
-                Bring your own key
+                自带 API key
               </a>{' '}
-              for better performance.
+              可获得更好性能。
             </>
           ) : provider.baseUrl ? (
             `${provider.modelId} • ${provider.baseUrl}`
@@ -110,11 +110,11 @@ export const ProviderCard: FC<ProviderCardProps> = ({
               onClick={() => onTest?.()}
             >
               {isTesting && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-              {isTesting ? 'Testing...' : 'Test'}
+              {isTesting ? '测试中...' : '测试'}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => onEdit?.()}>
-            Edit
+            编辑
           </Button>
           <Button
             variant="ghost"

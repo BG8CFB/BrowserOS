@@ -110,12 +110,12 @@ function defaultReasoningEffort(type?: ProviderType) {
 }
 
 const EFFORT_LABEL: Record<string, string> = {
-  none: 'None',
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  xhigh: 'Extra High',
-  max: 'Max',
+  none: '无',
+  low: '低',
+  medium: '中',
+  high: '高',
+  xhigh: '超高',
+  max: '最高',
 }
 
 function formatContextWindow(tokens: number): string {
@@ -126,8 +126,8 @@ function formatContextWindow(tokens: number): string {
 }
 
 function setupGuideLabel(type: ProviderType, providerName?: string): string {
-  if (type === 'moonshot') return 'How to get a Kimi API key'
-  return providerName ? `${providerName} setup guide` : 'Provider setup guide'
+  if (type === 'moonshot') return '如何获取 Kimi API Key'
+  return providerName ? `${providerName} 配置指南` : '服务商配置指南'
 }
 
 function isProviderTypeOptionSupported(
@@ -437,7 +437,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
     if (!agentServerUrl) {
       setTestResult({
         success: false,
-        message: 'Server URL not available',
+        message: '服务器地址不可用',
       })
       return
     }
@@ -474,7 +474,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
     } catch (error) {
       setTestResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Test failed',
+        message: error instanceof Error ? error.message : '测试失败',
       })
     } finally {
       setIsTesting(false)
@@ -501,8 +501,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
     if (isRemoteHermesType(watchedType as ProviderType)) {
       return (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-700 text-sm dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-          Remote Hermes runs in a managed VM. No API key, base URL, or model
-          selection is required.
+          Remote Hermes 运行在托管虚拟机中，无需 API Key、Base URL 或模型选择。
         </div>
       )
     }
@@ -523,8 +522,8 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               : 'Claude Code'
       const message =
         watchedType === 'codex' || watchedType === 'claude-code'
-          ? `Credentials are managed by the local ${name} runtime. No API key needed.`
-          : `Credentials are managed via ${name} OAuth. No API key needed.`
+          ? `凭据由本地 ${name} 运行时管理，无需 API Key。`
+          : `凭据通过 ${name} OAuth 管理，无需 API Key。`
       return (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-700 text-sm dark:border-green-800 dark:bg-green-950 dark:text-green-300">
           {message}
@@ -536,8 +535,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
       const agentLabel = watchedType === 'codex' ? 'Codex' : 'Claude Code'
       const banner = (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-700 text-sm dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-          Credentials are managed by the local {agentLabel} runtime. No API key
-          needed.
+          凭据由本地 {agentLabel} 运行时管理，无需 API Key。
         </div>
       )
       if (acpProbe.isPending) {
@@ -546,8 +544,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
             {banner}
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Loader2 className="size-4 animate-spin" />
-              Probing local {agentLabel} for available models and effort
-              levels...
+              正在探测本地 {agentLabel} 以获取可用模型和推理强度...
             </div>
           </>
         )
@@ -558,7 +555,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
             {banner}
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 text-sm dark:border-red-800 dark:bg-red-950 dark:text-red-300">
               <div>
-                Could not probe {agentLabel}:{' '}
+                无法探测 {agentLabel}：{' '}
                 {acpProbe.error instanceof Error
                   ? acpProbe.error.message
                   : String(acpProbe.error)}
@@ -570,7 +567,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 className="mt-2 h-7 px-2 text-xs"
                 onClick={() => acpProbe.refetch()}
               >
-                Retry
+                重试
               </Button>
             </div>
           </>
@@ -583,7 +580,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
             {banner}
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 text-sm dark:border-red-800 dark:bg-red-950 dark:text-red-300">
               <div>
-                {agentLabel} responded with{' '}
+                {agentLabel} 返回错误{' '}
                 <code className="rounded bg-red-100 px-1 dark:bg-red-900">
                   {probe.error.code}
                 </code>
@@ -596,7 +593,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 className="mt-2 h-7 px-2 text-xs"
                 onClick={() => acpProbe.refetch()}
               >
-                Retry
+                重试
               </Button>
             </div>
           </>
@@ -612,7 +609,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
             name="modelId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Model *</FormLabel>
+                <FormLabel>模型 *</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || ''}
@@ -622,9 +619,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={
-                          models.length === 0
-                            ? 'No settable models advertised'
-                            : 'Select a model...'
+                          models.length === 0 ? '无可设置的模型' : '选择模型...'
                         }
                       />
                     </SelectTrigger>
@@ -652,14 +647,14 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="reasoningEffort"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reasoning Effort</FormLabel>
+                  <FormLabel>推理强度</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value || ''}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select effort..." />
+                        <SelectValue placeholder="选择强度..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -683,7 +678,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
       return (
         <>
           <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-700 text-sm dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-            Credentials are managed via OAuth. No API key needed.
+            凭据通过 OAuth 管理，无需 API Key。
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -691,7 +686,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="reasoningEffort"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reasoning Effort</FormLabel>
+                  <FormLabel>推理强度</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value || 'medium'}
@@ -702,15 +697,13 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="none">无</SelectItem>
+                      <SelectItem value="low">低</SelectItem>
+                      <SelectItem value="medium">中</SelectItem>
+                      <SelectItem value="high">高</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    How much the model thinks before responding
-                  </FormDescription>
+                  <FormDescription>控制模型回复前的思考程度</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -720,7 +713,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="reasoningSummary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reasoning Summary</FormLabel>
+                  <FormLabel>推理摘要</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value || 'auto'}
@@ -731,14 +724,12 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="concise">Concise</SelectItem>
-                      <SelectItem value="detailed">Detailed</SelectItem>
+                      <SelectItem value="auto">自动</SelectItem>
+                      <SelectItem value="concise">简洁</SelectItem>
+                      <SelectItem value="detailed">详细</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Detail level of visible thinking steps
-                  </FormDescription>
+                  <FormDescription>可见思考步骤的详细程度</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -757,11 +748,11 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="resourceName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Resource Name *</FormLabel>
+                  <FormLabel>资源名称 *</FormLabel>
                   <FormControl>
                     <Input placeholder="your-resource-name" {...field} />
                   </FormControl>
-                  <FormDescription>Azure OpenAI resource name</FormDescription>
+                  <FormDescription>Azure OpenAI 资源名称</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -771,13 +762,11 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="baseUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Base URL Override</FormLabel>
+                  <FormLabel>Base URL 覆盖</FormLabel>
                   <FormControl>
-                    <Input placeholder="Optional custom URL" {...field} />
+                    <Input placeholder="可选自定义 URL" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Overrides resource name if set
-                  </FormDescription>
+                  <FormDescription>设置后将覆盖资源名称</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -792,7 +781,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="Enter your Azure API key"
+                    placeholder="输入你的 Azure API Key"
                     {...field}
                   />
                 </FormControl>
@@ -830,7 +819,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your secret access key"
+                      placeholder="输入你的 Secret Access Key"
                       {...field}
                     />
                   </FormControl>
@@ -845,7 +834,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
               name="region"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Region *</FormLabel>
+                  <FormLabel>区域 *</FormLabel>
                   <FormControl>
                     <Input placeholder="us-east-1" {...field} />
                   </FormControl>
@@ -862,13 +851,11 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Optional (for STS credentials)"
+                      placeholder="可选（用于 STS 凭据）"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Required for temporary credentials
-                  </FormDescription>
+                  <FormDescription>临时凭据时必填</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -908,14 +895,14 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                     type="password"
                     placeholder={
                       isApiKeyOptional
-                        ? 'Enter your API key (optional)'
-                        : 'Enter your API key'
+                        ? '输入你的 API Key（可选）'
+                        : '输入你的 API Key'
                     }
                     {...field}
                   />
                 </FormControl>
                 <FormDescription>
-                  Your API key is encrypted and stored locally.{' '}
+                  你的 API Key 已加密并存储在本地。{' '}
                   {setupGuideUrl && (
                     <a
                       href={setupGuideUrl}
@@ -941,12 +928,12 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {initialValues?.id ? 'Edit Provider' : 'Configure New Provider'}
+            {initialValues?.id ? '编辑服务商' : '配置新服务商'}
           </DialogTitle>
           <DialogDescription>
             {initialValues?.id
-              ? 'Update your LLM provider configuration.'
-              : 'Add a new LLM provider configuration with API key and model settings.'}
+              ? '更新你的 LLM 服务商配置。'
+              : '添加新的 LLM 服务商配置，包括 API Key 和模型设置。'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -957,14 +944,14 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Provider Type *</FormLabel>
+                    <FormLabel>服务商类型 *</FormLabel>
                     <Select
                       onValueChange={(v) => handleTypeChange(v as ProviderType)}
                       value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select provider type" />
+                          <SelectValue placeholder="选择服务商类型" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -984,9 +971,9 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Provider Name *</FormLabel>
+                    <FormLabel>服务商名称 *</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Work OpenAI" {...field} />
+                      <Input placeholder="例如：工作用 OpenAI" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1002,16 +989,16 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 name="modelId"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Model *</FormLabel>
+                    <FormLabel>模型 *</FormLabel>
                     {modelInfoList.length === 0 ? (
                       <FormControl>
                         <Input
                           placeholder={
                             watchedType === 'azure'
-                              ? 'Enter your deployment name'
+                              ? '输入你的部署名称'
                               : watchedType === 'bedrock'
                                 ? 'e.g., anthropic.claude-3-5-sonnet-20241022-v2:0'
-                                : 'Enter model ID'
+                                : '输入模型 ID'
                           }
                           {...field}
                         />
@@ -1035,7 +1022,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                             )}
                           >
                             <span className="truncate">
-                              {field.value || 'Select a model...'}
+                              {field.value || '选择模型...'}
                             </span>
                             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </button>
@@ -1046,7 +1033,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                         >
                           <Command shouldFilter={false}>
                             <CommandInput
-                              placeholder="Search models..."
+                              placeholder="搜索模型..."
                               value={modelSearch}
                               onValueChange={(v) => {
                                 setModelSearch(v)
@@ -1073,7 +1060,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                             />
                             <CommandList ref={modelListRef}>
                               <CommandEmpty>
-                                No models found. Press Enter to use &quot;
+                                未找到模型。按 Enter 键使用 &quot;
                                 {modelSearch}&quot;
                               </CommandEmpty>
                               {showCustomEntry && (
@@ -1150,7 +1137,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
             )}
 
             <div className="space-y-4 border-border border-t pt-4">
-              <h4 className="font-medium text-sm">Model Configuration</h4>
+              <h4 className="font-medium text-sm">模型配置</h4>
               <FormField
                 control={form.control}
                 name="supportsImages"
@@ -1162,9 +1149,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Supports Images
-                    </FormLabel>
+                    <FormLabel className="font-normal">支持图片</FormLabel>
                   </FormItem>
                 )}
               />
@@ -1174,7 +1159,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                   name="contextWindow"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Context Window Size</FormLabel>
+                      <FormLabel>上下文窗口大小</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -1184,9 +1169,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                           }
                         />
                       </FormControl>
-                      <FormDescription>
-                        Auto-filled based on model
-                      </FormDescription>
+                      <FormDescription>根据模型自动填充</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1196,7 +1179,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                   name="temperature"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Temperature (0-2)</FormLabel>
+                      <FormLabel>温度 (0-2)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -1209,9 +1192,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                           }
                         />
                       </FormControl>
-                      <FormDescription>
-                        Controls response randomness
-                      </FormDescription>
+                      <FormDescription>控制回复的随机性</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1247,7 +1228,7 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                取消
               </Button>
               <Button
                 type="button"
@@ -1256,10 +1237,10 @@ export const NewProviderDialog: FC<NewProviderDialogProps> = ({
                 disabled={!canTest || isTesting}
               >
                 {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isTesting ? 'Testing...' : 'Test'}
+                {isTesting ? '测试中...' : '测试'}
               </Button>
               <Button type="submit" disabled={isTesting}>
-                {initialValues?.id ? 'Update' : 'Save'}
+                {initialValues?.id ? '更新' : '保存'}
               </Button>
             </DialogFooter>
           </form>

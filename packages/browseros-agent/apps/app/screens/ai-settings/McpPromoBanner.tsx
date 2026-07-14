@@ -23,10 +23,10 @@ export const McpPromoBanner: FC = () => {
       </div>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 font-semibold text-sm">
-          Use BrowserOS with Claude Code, Cursor & more
+          在 BrowserOS 中使用 Claude Code、Cursor 等工具
         </p>
         <p className="text-muted-foreground text-xs">
-          Connect your favorite coding tools to BrowserOS as an MCP server
+          将你喜爱的编程工具作为 MCP 服务器连接到 BrowserOS
         </p>
       </div>
       <Button
@@ -35,7 +35,7 @@ export const McpPromoBanner: FC = () => {
         onClick={handleClick}
         className="shrink-0 border-[var(--accent-orange)] bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] hover:bg-[var(--accent-orange)]/20 hover:text-[var(--accent-orange)]"
       >
-        Set up
+        设置
         <ArrowRight className="ml-1 h-3 w-3" />
       </Button>
       <button

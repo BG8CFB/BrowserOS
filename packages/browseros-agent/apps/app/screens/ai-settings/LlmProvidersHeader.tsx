@@ -45,9 +45,9 @@ export const LlmProvidersHeader: FC<LlmProvidersHeaderProps> = ({
           <img src={ProductLogoSvg} alt="BrowserOS" className="h-8 w-8" />
         </div>
         <div className="flex-1">
-          <h2 className="mb-1 font-semibold text-xl">LLM Providers</h2>
+          <h2 className="mb-1 font-semibold text-xl">LLM 服务商</h2>
           <p className="mb-6 text-muted-foreground text-sm">
-            Add your provider and choose the default for new chats
+            添加你的服务商并选择新对话的默认服务商
           </p>
 
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -55,7 +55,7 @@ export const LlmProvidersHeader: FC<LlmProvidersHeaderProps> = ({
               htmlFor="provider-picker"
               className="whitespace-nowrap font-medium text-sm"
             >
-              Default Provider:
+              默认服务商：
             </label>
             <Select
               value={encodeTargetValue(selectedTarget)}
@@ -68,11 +68,11 @@ export const LlmProvidersHeader: FC<LlmProvidersHeaderProps> = ({
                 id="provider-picker"
                 className="w-full flex-1 sm:max-w-xs"
               >
-                <SelectValue placeholder="Select a provider" />
+                <SelectValue placeholder="选择服务商" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>LLM providers</SelectLabel>
+                  <SelectLabel>LLM 服务商</SelectLabel>
                   {providers.map((provider) => (
                     <SelectItem
                       key={provider.id}
@@ -87,7 +87,7 @@ export const LlmProvidersHeader: FC<LlmProvidersHeaderProps> = ({
                 </SelectGroup>
                 {agents.length > 0 && (
                   <SelectGroup>
-                    <SelectLabel>Coding agents</SelectLabel>
+                    <SelectLabel>编程代理</SelectLabel>
                     {agents.map((agent) => (
                       <SelectItem
                         key={agent.id}
@@ -106,7 +106,7 @@ export const LlmProvidersHeader: FC<LlmProvidersHeaderProps> = ({
               className="border-[var(--accent-orange)] bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] hover:bg-[var(--accent-orange)]/20 hover:text-[var(--accent-orange)]"
             >
               <Plus className="h-4 w-4" />
-              Add custom provider
+              添加自定义服务商
             </Button>
           </div>
         </div>

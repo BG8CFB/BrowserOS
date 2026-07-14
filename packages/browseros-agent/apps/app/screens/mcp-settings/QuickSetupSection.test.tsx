@@ -56,7 +56,7 @@ describe('QuickSetupSection', () => {
     const html = render()
 
     expect(html).toContain('Claude Desktop')
-    expect(html).toContain('Add this block to')
+    expect(html).toContain('将以下内容添加到')
     expect(html).toContain('claude_desktop_config.json')
     expect(html).toContain('&quot;command&quot;: &quot;npx&quot;')
     expect(html).toContain('&quot;mcp-remote&quot;')
@@ -65,7 +65,7 @@ describe('QuickSetupSection', () => {
     const commandIndex = html.indexOf('&quot;command&quot;: &quot;npx&quot;')
     const desktopSnippet = html.slice(
       commandIndex,
-      html.indexOf('Copy Claude Desktop setup', commandIndex),
+      html.indexOf('复制 Claude Desktop 配置', commandIndex),
     )
     expect(desktopSnippet).not.toContain(
       '&quot;url&quot;: &quot;http://127.0.0.1:9200/mcp&quot;',

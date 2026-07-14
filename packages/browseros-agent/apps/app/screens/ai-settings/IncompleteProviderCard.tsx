@@ -45,7 +45,7 @@ export const IncompleteProviderCard: FC<IncompleteProviderCardProps> = ({
       <div className="flex shrink-0 items-center gap-2">
         <Button variant="outline" size="sm" onClick={onAddKeys}>
           <KeyRound className="mr-1.5 h-4 w-4" />
-          Add Keys
+          添加 Key
         </Button>
         <Button
           variant="ghost"

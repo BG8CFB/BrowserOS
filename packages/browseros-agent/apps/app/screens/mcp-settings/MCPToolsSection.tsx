@@ -33,10 +33,10 @@ export const MCPToolsSection: FC<MCPToolsSectionProps> = ({
         <div className="flex items-start justify-between gap-3">
           <CollapsibleTrigger className="flex flex-1 items-center justify-between text-left">
             <div>
-              <h3 className="font-semibold text-lg">Available Tools</h3>
+              <h3 className="font-semibold text-lg">可用工具</h3>
               {tools.length > 0 && (
                 <p className="text-muted-foreground text-sm">
-                  {tools.length} tools available
+                  {tools.length} 个可用工具
                 </p>
               )}
             </div>
@@ -52,7 +52,7 @@ export const MCPToolsSection: FC<MCPToolsSectionProps> = ({
             onClick={onRefresh}
             disabled={isLoading}
             className="border-[var(--accent-orange)] bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] hover:bg-[var(--accent-orange)]/20 hover:text-[var(--accent-orange)]"
-            title="Refresh tools"
+            title="刷新工具"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

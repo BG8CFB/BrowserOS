@@ -9,9 +9,9 @@ export const CustomizationHeader: FC = () => {
           <Palette className="h-6 w-6 text-[var(--accent-orange)]" />
         </div>
         <div className="flex-1">
-          <h2 className="mb-1 font-semibold text-xl">Customization</h2>
+          <h2 className="mb-1 font-semibold text-xl">个性化</h2>
           <p className="text-muted-foreground text-sm">
-            Personalize your toolbar and browser interface
+            自定义你的工具栏和浏览器界面
           </p>
         </div>
       </div>

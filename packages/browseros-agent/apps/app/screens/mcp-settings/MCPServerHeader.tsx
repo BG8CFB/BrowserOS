@@ -54,15 +54,13 @@ export const MCPServerHeader: FC<MCPServerHeaderProps> = ({
       const healthy = await waitForServerHealth()
       if (healthy) {
         track(MCP_SERVER_RESTARTED_EVENT)
-        toast.success('Server restarted successfully')
+        toast.success('服务器重启成功')
         onServerRestart?.()
       } else {
-        toast.error('Server did not respond. Try restarting the browser.')
+        toast.error('服务器未响应，请尝试重启浏览器。')
       }
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : 'Failed to restart server',
-      )
+      toast.error(err instanceof Error ? err.message : '重启服务器失败')
     } finally {
       setIsRestarting(false)
     }
@@ -76,30 +74,29 @@ export const MCPServerHeader: FC<MCPServerHeaderProps> = ({
         </div>
         <div className="flex-1">
           <div className="mb-1 flex items-center justify-between">
-            <h2 className="font-semibold text-xl">BrowserOS MCP Server</h2>
+            <h2 className="font-semibold text-xl">BrowserOS MCP 服务器</h2>
             <a
               href={DOCS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-[var(--accent-orange)]"
             >
-              Docs
+              文档
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
           <p className="mb-6 text-muted-foreground text-sm">
-            Connect BrowserOS to MCP clients like Claude Code, Gemini CLI and
-            others.
+            将 BrowserOS 连接到 Claude Code、Gemini CLI 等 MCP 客户端。
           </p>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <span className="whitespace-nowrap font-medium text-sm">
-              Server URL:
+              服务器 URL：
             </span>
             <div className="flex flex-1 items-center gap-2">
               <div className="flex-1 rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm sm:max-w-md">
                 {isLoading ? (
-                  <span className="text-muted-foreground">Loading...</span>
+                  <span className="text-muted-foreground">加载中...</span>
                 ) : error ? (
                   <span className="text-destructive">{error}</span>
                 ) : (
@@ -112,7 +109,7 @@ export const MCPServerHeader: FC<MCPServerHeaderProps> = ({
                 onClick={handleCopy}
                 disabled={!serverUrl || isLoading}
                 className="shrink-0"
-                title="Copy URL"
+                title="复制 URL"
               >
                 {isCopied ? (
                   <Check className="h-4 w-4 text-green-600" />
@@ -126,7 +123,7 @@ export const MCPServerHeader: FC<MCPServerHeaderProps> = ({
                 onClick={handleRestart}
                 disabled={isLoading || isRestarting}
                 className="shrink-0"
-                title="Restart server"
+                title="重启服务器"
               >
                 {isRestarting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

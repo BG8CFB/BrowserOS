@@ -43,7 +43,7 @@ export const CodingAgentTemplateCard: FC<CodingAgentTemplateCardProps> = ({
         variant="outline"
         className="shrink-0 rounded-md px-3 py-1 transition-colors group-hover:border-[var(--accent-orange)] group-hover:text-[var(--accent-orange)]"
       >
-        USE
+        使用
       </Badge>
     </button>
   )

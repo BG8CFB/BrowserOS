@@ -24,7 +24,7 @@ export const ScheduledTasksHeader: FC<ScheduledTasksHeaderProps> = ({
         </div>
         <div className="flex-1">
           <div className="mb-1 flex items-center gap-2">
-            <h2 className="font-semibold text-xl">Scheduled Tasks</h2>
+            <h2 className="font-semibold text-xl">定时任务</h2>
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -37,14 +37,12 @@ export const ScheduledTasksHeader: FC<ScheduledTasksHeaderProps> = ({
                     <HelpCircle className="h-4 w-4" />
                   </a>
                 </TooltipTrigger>
-                <TooltipContent>
-                  Learn more about scheduled tasks
-                </TooltipContent>
+                <TooltipContent>了解更多关于定时任务的信息</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           <p className="text-muted-foreground text-sm">
-            Automate recurring browser tasks
+            自动化重复的浏览器任务
           </p>
         </div>
         <Button
@@ -53,7 +51,7 @@ export const ScheduledTasksHeader: FC<ScheduledTasksHeaderProps> = ({
           variant="outline"
         >
           <Plus className="mr-1.5 h-4 w-4" />
-          New Task
+          新建任务
         </Button>
       </div>
     </div>

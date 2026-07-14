@@ -42,25 +42,25 @@ export interface ScheduledTaskCardProps {
 
 function formatSchedule(job: ScheduledJob): string {
   if (job.scheduleType === 'daily' && job.scheduleTime) {
-    return `Daily at ${job.scheduleTime}`
+    return `每天 ${job.scheduleTime}`
   }
   if (job.scheduleType === 'hourly' && job.scheduleInterval) {
     return job.scheduleInterval === 1
-      ? 'Every hour'
-      : `Every ${job.scheduleInterval} hours`
+      ? '每小时'
+      : `每 ${job.scheduleInterval} 小时`
   }
   if (job.scheduleType === 'minutes' && job.scheduleInterval) {
     return job.scheduleInterval === 1
-      ? 'Every minute'
-      : `Every ${job.scheduleInterval} minutes`
+      ? '每分钟'
+      : `每 ${job.scheduleInterval} 分钟`
   }
-  return 'Not scheduled'
+  return '未计划'
 }
 
 const formatRelativeTime = (dateStr: string) => dayjs(dateStr).fromNow()
 
 function formatDuration(startedAt: string, completedAt?: string): string {
-  if (!completedAt) return 'Running...'
+  if (!completedAt) return '运行中...'
   const diff = dayjs(completedAt).diff(dayjs(startedAt))
   const d = dayjs.duration(diff)
   const mins = Math.floor(d.asMinutes())
@@ -119,7 +119,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
         <Switch
           checked={job.enabled}
           onCheckedChange={onToggle}
-          aria-label={`${job.enabled ? 'Disable' : 'Enable'} ${job.name}`}
+          aria-label={`${job.enabled ? '禁用' : '启用'} ${job.name}`}
         />
 
         <div className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
             <span className="truncate font-semibold">{job.name}</span>
             {!job.enabled && (
               <span className="rounded bg-muted px-1.5 py-0.5 text-muted-foreground text-xs">
-                Disabled
+                已禁用
               </span>
             )}
           </div>
@@ -152,7 +152,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
             {job.lastRunAt && (
               <>
                 <span>•</span>
-                <span>Last run: {formatRelativeTime(job.lastRunAt)}</span>
+                <span>上次运行：{formatRelativeTime(job.lastRunAt)}</span>
               </>
             )}
           </div>
@@ -161,18 +161,18 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
         <div className="flex shrink-0 items-center gap-2">
           <Button variant="outline" size="sm" onClick={onRun}>
             <Play className="mr-1.5 h-3 w-3" />
-            Test
+            测试
           </Button>
           <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil className="mr-1.5 h-3 w-3" />
-            Edit
+            编辑
           </Button>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={onDelete}
             className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-            aria-label={`Delete ${job.name}`}
+            aria-label={`删除 ${job.name}`}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -187,7 +187,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
                 isOpen ? 'rotate-180' : ''
               }`}
             />
-            <span>Run History ({runs.length})</span>
+            <span>运行记录（{runs.length}）</span>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-3">
             <div className="space-y-2">
@@ -228,7 +228,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
                           onCancelRun(run.id)
                         }}
                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        aria-label="Cancel run"
+                        aria-label="取消运行"
                       >
                         <Square className="h-3.5 w-3.5" />
                       </Button>
@@ -242,7 +242,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
                           onRetryRun(run.jobId)
                         }}
                         className="text-muted-foreground hover:text-foreground"
-                        aria-label="Retry run"
+                        aria-label="重试运行"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
                       </Button>
@@ -253,7 +253,7 @@ export const ScheduledTaskCard: FC<ScheduledTaskCardProps> = ({
                       onClick={() => onViewRun(run)}
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                     >
-                      View
+                      查看
                     </Button>
                   </div>
                 </div>

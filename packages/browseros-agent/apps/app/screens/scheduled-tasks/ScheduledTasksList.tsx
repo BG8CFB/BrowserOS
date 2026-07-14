@@ -28,7 +28,7 @@ export const ScheduledTasksList: FC<ScheduledTasksListProps> = ({
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <div className="rounded-lg border border-border border-dashed py-8 text-center">
           <p className="text-muted-foreground text-sm">
-            No scheduled tasks yet. Create one to automate recurring tasks.
+            还没有定时任务。创建一个来自动执行重复任务。
           </p>
         </div>
       </div>
