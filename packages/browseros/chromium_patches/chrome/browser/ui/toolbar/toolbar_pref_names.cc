@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/toolbar/toolbar_pref_names.cc b/chrome/browser/ui/toolbar/toolbar_pref_names.cc
-index b0e7b69174614..a4919ec0d8958 100644
+index b0e7b69174..71fc5728e3 100644
 --- a/chrome/browser/ui/toolbar/toolbar_pref_names.cc
 +++ b/chrome/browser/ui/toolbar/toolbar_pref_names.cc
 @@ -4,8 +4,11 @@
@@ -30,29 +30,3 @@ index b0e7b69174614..a4919ec0d8958 100644
  
    if (features::HasTabSearchToolbarButton()) {
      const std::optional<std::string>& tab_search_action =
-@@ -31,6 +27,15 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-     }
-   }
- 
-+  // Add third-party LLM panel to default pinned actions
-+  if (base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel)) {
-+    const std::optional<std::string>& third_party_llm_action =
-+        actions::ActionIdMap::ActionIdToString(kActionSidePanelShowThirdPartyLlm);
-+    if (third_party_llm_action.has_value()) {
-+      default_pinned_actions.Append(third_party_llm_action.value());
-+    }
-+  }
-+
-   registry->RegisterListPref(prefs::kPinnedActions,
-                              std::move(default_pinned_actions),
-                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-@@ -46,6 +51,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-   registry->RegisterBooleanPref(
-       prefs::kTabSearchMigrationComplete, false,
-       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-+  registry->RegisterBooleanPref(
-+      prefs::kPinnedThirdPartyLlmMigrationComplete, false,
-+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
- }
- 
- }  // namespace toolbar

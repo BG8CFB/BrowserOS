@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.cc b/chrome/browser/browseros/core/browseros_prefs.cc
 new file mode 100644
-index 0000000000000..437809a5bf4cf
+index 0000000000..37d8322257
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.cc
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,124 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -26,8 +26,6 @@ index 0000000000000..437809a5bf4cf
 +  const bool show_tab_groups_in_bookmark_bar_by_default =
 +      !IsBrowserClawProduct();
 +
-+  registry->RegisterBooleanPref(prefs::kShowLLMChat,
-+                                show_toolbar_controls_by_default);
 +  registry->RegisterBooleanPref(prefs::kShowAssistant,
 +                                show_toolbar_controls_by_default);
 +  registry->RegisterBooleanPref(prefs::kShowToolbarLabels,
@@ -44,9 +42,6 @@ index 0000000000000..437809a5bf4cf
 +  registry->RegisterBooleanPref(prefs::kOnboardingCompleted, false);
 +}
 +
-+bool ShouldShowLLMChat(PrefService* pref_service) {
-+  return pref_service->GetBoolean(prefs::kShowLLMChat);
-+}
 +
 +bool ShouldShowAssistant(PrefService* pref_service) {
 +  return pref_service->GetBoolean(prefs::kShowAssistant);
@@ -109,8 +104,6 @@ index 0000000000000..437809a5bf4cf
 +
 +const char* GetVisibilityPrefForAction(actions::ActionId id) {
 +  switch (id) {
-+    case kActionSidePanelShowThirdPartyLlm:
-+      return prefs::kShowLLMChat;
 +    case kActionBrowserOSAgent:
 +      return prefs::kShowAssistant;
 +    default:

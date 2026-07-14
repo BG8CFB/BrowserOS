@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/browser_command_controller.cc b/chrome/browser/ui/browser_command_controller.cc
-index 738696abf04fa..ec170ce291d37 100644
+index 738696abf0..6f63473758 100644
 --- a/chrome/browser/ui/browser_command_controller.cc
 +++ b/chrome/browser/ui/browser_command_controller.cc
 @@ -7,7 +7,9 @@
@@ -34,15 +34,7 @@ index 738696abf04fa..ec170ce291d37 100644
  #include "chrome/browser/lifetime/application_lifetime.h"
  #include "chrome/browser/prefs/incognito_mode_prefs.h"
  #include "chrome/browser/profiles/profile.h"
-@@ -86,6 +92,7 @@
- #include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
- #include "chrome/browser/ui/ui_features.h"
- #include "chrome/browser/ui/views/frame/browser_view.h"
-+#include "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.h"
- #include "chrome/browser/ui/web_applications/app_browser_controller.h"
- #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
- #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-@@ -101,6 +108,7 @@
+@@ -101,6 +107,7 @@
  #include "chrome/common/webui_url_constants.h"
  #include "components/bookmarks/common/bookmark_pref_names.h"
  #include "components/dom_distiller/core/dom_distiller_features.h"
@@ -50,26 +42,10 @@ index 738696abf04fa..ec170ce291d37 100644
  #include "components/input/native_web_keyboard_event.h"
  #include "components/lens/buildflags.h"
  #include "components/password_manager/core/browser/manage_passwords_referrer.h"
-@@ -1089,6 +1097,65 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
+@@ -1089,6 +1096,49 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
        browser_->GetFeatures().side_panel_ui()->Show(
            SidePanelEntryId::kBookmarks, SidePanelOpenTrigger::kAppMenu);
        break;
-+    case IDC_SHOW_THIRD_PARTY_LLM_SIDE_PANEL:
-+      if (base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel)) {
-+        browser_->GetFeatures().side_panel_ui()->Toggle(
-+            SidePanelEntry::Key(SidePanelEntryId::kThirdPartyLlm),
-+            SidePanelOpenTrigger::kAppMenu);
-+      }
-+      break;
-+    case IDC_CYCLE_THIRD_PARTY_LLM_PROVIDER:
-+      if (base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel)) {
-+        if (ThirdPartyLlmPanelCoordinator* coordinator =
-+                browser_->browser_window_features()
-+                    ->third_party_llm_panel_coordinator()) {
-+          coordinator->CycleProvider();
-+        }
-+      }
-+      break;
 +    case IDC_TOGGLE_BROWSEROS_AGENT: {
 +      if (!browseros::IsActiveBrowserOSExtension(
 +              browseros::kAgentExtensionId)) {
@@ -116,16 +92,10 @@ index 738696abf04fa..ec170ce291d37 100644
      case IDC_SHOW_APP_MENU:
        base::RecordAction(base::UserMetricsAction("Accel_Show_App_Menu"));
        ShowAppMenu(browser_);
-@@ -1802,6 +1869,15 @@ void BrowserCommandController::InitCommandState() {
+@@ -1802,6 +1852,9 @@ void BrowserCommandController::InitCommandState() {
    }
  
    command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
-+  command_updater_.UpdateCommandEnabled(
-+      IDC_SHOW_THIRD_PARTY_LLM_SIDE_PANEL,
-+      base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel));
-+  command_updater_.UpdateCommandEnabled(
-+      IDC_CYCLE_THIRD_PARTY_LLM_PROVIDER,
-+      base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel));
 +  command_updater_.UpdateCommandEnabled(
 +      IDC_TOGGLE_BROWSEROS_AGENT,
 +      browseros::IsActiveBrowserOSExtension(browseros::kAgentExtensionId));

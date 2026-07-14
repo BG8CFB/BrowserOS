@@ -4,7 +4,6 @@ import {
   Bot,
   Compass,
   CreditCard,
-  MessageSquare,
   Palette,
   RotateCcw,
   Server,
@@ -57,27 +56,20 @@ const sectionLabelClassName =
 
 const primarySettingsSections: NavSection[] = [
   {
-    label: 'Provider Settings',
-    items: [
-      { name: 'AI & Agents', to: '/settings/ai', icon: Bot },
-      {
-        name: 'Chat & Council Provider',
-        to: '/settings/chat',
-        icon: MessageSquare,
-      },
-    ],
+    label: '服务商设置',
+    items: [{ name: 'AI 与代理', to: '/settings/ai', icon: Bot }],
   },
   {
-    label: 'Other',
+    label: '其他',
     items: [
       {
-        name: 'Customize BrowserOS',
+        name: '自定义 BrowserOS',
         to: '/settings/customization',
         icon: Palette,
       },
-      { name: 'BrowserOS as MCP', to: '/settings/mcp', icon: Server },
+      { name: 'BrowserOS 作为 MCP', to: '/settings/mcp', icon: Server },
       {
-        name: 'Usage & Billing',
+        name: '用量与账单',
         to: '/settings/usage',
         icon: CreditCard,
         feature: Feature.CREDITS_SUPPORT,
@@ -87,9 +79,9 @@ const primarySettingsSections: NavSection[] = [
 ]
 
 const helpItems: NavItem[] = [
-  { name: 'Docs', href: 'https://docs.browseros.com/', icon: BookOpen },
-  { name: 'Features', to: '/onboarding/features', icon: Compass },
-  { name: 'Revisit Onboarding', to: '/onboarding', icon: RotateCcw },
+  { name: '文档', href: 'https://docs.browseros.com/', icon: BookOpen },
+  { name: '功能介绍', to: '/onboarding/features', icon: Compass },
+  { name: '重新查看引导', to: '/onboarding', icon: RotateCcw },
 ]
 
 export const SettingsSidebar: FC = () => {
@@ -154,7 +146,7 @@ export const SettingsSidebar: FC = () => {
           className="flex h-9 items-center gap-2 overflow-hidden whitespace-nowrap rounded-md px-3 font-medium text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <ArrowLeft className="size-4 shrink-0" />
-          <span className="truncate">Back</span>
+          <span className="truncate">返回</span>
         </NavLink>
         <ThemeToggle
           className="mr-1 h-8 w-8 shrink-0"
@@ -164,11 +156,11 @@ export const SettingsSidebar: FC = () => {
 
       <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden p-2">
         <div className="mb-2 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-          Settings
+          设置
         </div>
         <div>{filteredSections.map(renderSection)}</div>
         <div className="mt-auto pt-4">
-          <div className={sectionLabelClassName}>Help</div>
+          <div className={sectionLabelClassName}>帮助</div>
           <nav className="space-y-1">
             {filteredHelpItems.map(renderNavItem)}
           </nav>

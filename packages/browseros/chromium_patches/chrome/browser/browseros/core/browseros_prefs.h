@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.h b/chrome/browser/browseros/core/browseros_prefs.h
 new file mode 100644
-index 0000000000000..9ea1d4683fc35
+index 0000000000..1a435d68cd
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,110 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -26,7 +26,6 @@ index 0000000000000..9ea1d4683fc35
 +
 +// Toolbar visibility prefs
 +// Boolean: Show LLM Chat in toolbar (default: true)
-+inline constexpr char kShowLLMChat[] = "browseros.show_llm_chat";
 +
 +// Boolean: Show Assistant in toolbar (default: true)
 +inline constexpr char kShowAssistant[] = "browseros.show_assistant";
@@ -64,7 +63,6 @@ index 0000000000000..9ea1d4683fc35
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 +
 +// Check if LLM Chat should be shown in toolbar.
-+bool ShouldShowLLMChat(PrefService* pref_service);
 +
 +// Check if Assistant should be shown in toolbar.
 +bool ShouldShowAssistant(PrefService* pref_service);

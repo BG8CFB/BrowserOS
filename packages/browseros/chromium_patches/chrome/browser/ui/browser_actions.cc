@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/browser_actions.cc b/chrome/browser/ui/browser_actions.cc
-index 8a43e7c2fcde5..2f9e4a7a80b4b 100644
+index 8a43e7c2fc..4c5ead590e 100644
 --- a/chrome/browser/ui/browser_actions.cc
 +++ b/chrome/browser/ui/browser_actions.cc
 @@ -18,13 +18,17 @@
@@ -50,19 +50,11 @@ index 8a43e7c2fcde5..2f9e4a7a80b4b 100644
  #include "ui/accessibility/accessibility_features.h"
  #include "ui/actions/actions.h"
  #include "ui/base/l10n/l10n_util.h"
-@@ -310,6 +318,92 @@ void BrowserActions::InitializeSidePanelActions() {
+@@ -310,6 +318,84 @@ void BrowserActions::InitializeSidePanelActions() {
              .Build());
    }
  
 +  // Add third-party LLM panel if feature is enabled
-+  if (base::FeatureList::IsEnabled(features::kThirdPartyLlmPanel)) {
-+    root_action_item_->AddChild(
-+        SidePanelAction(SidePanelEntryId::kThirdPartyLlm,
-+                        IDS_THIRD_PARTY_LLM_TITLE, IDS_THIRD_PARTY_LLM_TITLE,
-+                        vector_icons::kChatOrangeIcon,
-+                        kActionSidePanelShowThirdPartyLlm, bwi, true)
-+            .Build());
-+  }
 +
 +  if (browseros::IsActiveBrowserOSExtension(browseros::kAgentExtensionId)) {
 +    root_action_item_->AddChild(

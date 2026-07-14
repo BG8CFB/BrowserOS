@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_action_utils.h b/chrome/browser/browseros/core/browseros_action_utils.h
 new file mode 100644
-index 0000000000000..cf8770fd34479
+index 0000000000..fc85d21466
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_action_utils.h
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,52 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -19,15 +19,12 @@ index 0000000000000..cf8770fd34479
 +#include "chrome/browser/ui/actions/chrome_action_id.h"
 +#include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
 +#include "chrome/browser/ui/ui_features.h"
-+#include "chrome/common/chrome_features.h"
 +#include "ui/actions/actions.h"
 +
 +namespace browseros {
 +
-+constexpr auto kBrowserOSNativeActionIds =
-+    base::MakeFixedFlatSet<actions::ActionId>({
-+        kActionSidePanelShowThirdPartyLlm,
-+    });
++inline constexpr auto kBrowserOSNativeActionIds =
++    base::fixed_flat_set<actions::ActionId, 0>();
 +
 +inline bool IsBrowserOSAction(actions::ActionId id) {
 +  if (id == kActionBrowserOSAgent) {
@@ -53,12 +50,7 @@ index 0000000000000..cf8770fd34479
 +}
 +
 +inline const base::Feature* GetFeatureForBrowserOSAction(actions::ActionId id) {
-+  switch (id) {
-+    case kActionSidePanelShowThirdPartyLlm:
-+      return &features::kThirdPartyLlmPanel;
-+    default:
-+      return nullptr;
-+  }
++  return nullptr;
 +}
 +
 +}  // namespace browseros
