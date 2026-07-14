@@ -29,6 +29,11 @@ gclient.json
 AGENTS.md
 **/resources/binaries/
 
+# Reference projects — external repos placed in the working tree for consultation only.
+# Do NOT modify, do NOT git-track. See CLAUDE.md "Nested clones" section.
+claude-code/
+claw-code/
+
 packages/browseros/build/tools/
 packages/browseros/build/extensions/
 
