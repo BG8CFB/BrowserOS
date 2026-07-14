@@ -22,7 +22,7 @@ mock.module('./sidePanelOpenStateStorage', () => ({
       if (getSidePanelPerWindowOverride) {
         return await getSidePanelPerWindowOverride()
       }
-      return storedSidePanelPerWindow ?? false
+      return storedSidePanelPerWindow ?? true
     },
     setValue: async (perWindow: boolean) => {
       storedSidePanelPerWindow = perWindow
@@ -99,6 +99,7 @@ beforeEach(async () => {
     },
   } as typeof chrome
 
+  registerSidePanelOpenStateListeners()
   fireWindowClosed(3)
   await setSidePanelPerWindowPreference(false)
   setOptionsCalls = []
@@ -128,12 +129,13 @@ describe('side panel scope routing', () => {
     expect(openCalls).toEqual([])
   })
 
-  it('keeps toolbar toggles on the BrowserOS tab-specific API when scope storage is absent', async () => {
+  it('defaults to Chromium window APIs when scope storage is absent', async () => {
+    await refreshSidePanelRuntimeState()
     const result = await toggleSidePanel({ tabId: 7, windowId: 3 })
 
     expect(result).toEqual({ opened: true })
-    expect(browserosToggleCalls).toEqual([{ tabId: 7 }])
-    expect(openCalls).toEqual([])
+    expect(openCalls).toEqual([{ windowId: 3 }])
+    expect(browserosToggleCalls).toEqual([])
     expect(closeCalls).toEqual([])
   })
 

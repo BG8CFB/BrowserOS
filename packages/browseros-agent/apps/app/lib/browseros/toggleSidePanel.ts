@@ -35,9 +35,7 @@ async function applySidePanelPerWindowPreference(
   epoch: number,
 ): Promise<void> {
   if (epoch !== sidePanelScopePreferenceEpoch) return
-  await chrome.sidePanel.setOptions(
-    perWindow ? { enabled: true, path: SIDEPANEL_PATH } : { enabled: false },
-  )
+  await chrome.sidePanel.setOptions({ enabled: true, path: SIDEPANEL_PATH })
   if (epoch !== sidePanelScopePreferenceEpoch) return
   sidePanelPerWindow = perWindow
 }
@@ -48,7 +46,7 @@ async function loadSidePanelScopePreference(): Promise<void> {
     const perWindow = await sidePanelPerWindowStorage.getValue()
     await applySidePanelPerWindowPreference(perWindow, epoch)
   } catch {
-    await applySidePanelPerWindowPreference(false, epoch)
+    await applySidePanelPerWindowPreference(true, epoch)
   }
 }
 

@@ -2,6 +2,7 @@ import { storage } from '@wxt-dev/storage'
 import { sessionStorage } from '@/lib/auth/sessionStorage'
 import { Capabilities } from '@/lib/browseros/capabilities'
 import { getHealthCheckUrl, getMcpServerUrl } from '@/lib/browseros/helpers'
+import { migrateSidePanelPerWindowDefault } from '@/lib/browseros/sidePanelOpenStateStorage'
 import {
   ensureSidePanelRuntimeStateLoaded,
   openSidePanel,
@@ -49,7 +50,9 @@ const cleanupLegacyToolApprovalStorage = async () => {
 
 export default defineBackground(() => {
   registerSidePanelOpenStateListeners()
-  ensureSidePanelRuntimeStateLoaded().catch(() => null)
+  migrateSidePanelPerWindowDefault()
+    .catch(() => null)
+    .finally(() => ensureSidePanelRuntimeStateLoaded().catch(() => null))
 
   Capabilities.initialize().catch(() => null)
   setupLlmProvidersBackupToBrowserOS()
