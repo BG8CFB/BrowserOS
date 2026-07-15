@@ -41,3 +41,6 @@ packages/browseros/build/extensions/
 .devtools/
 .omc/
 .llm/
+
+# AI 临时工作目录（脚本、日志、测试 profile；见 CLAUDE.md §6.7）
+.ai_temp/
